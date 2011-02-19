@@ -1,0 +1,6 @@
+[submodule "vendor/handlr"]
+	path = vendor/handlr
+	url = git@git.meza.hu:handlr.git
+[submodule "vendor/restlr"]
+	path = vendor/restlr
+	url = git@git.meza.hu:restlr.git
