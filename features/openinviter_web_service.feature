@@ -31,7 +31,7 @@ Scenario: Bad Password
 Scenario: Successful Login But No Contacts Exist
 
 	When I POST to /get_contacts?service=gmail&username=clubleads.nocontacts@gmail.com&password=badpassword
-	Then I should receive a FAIL response with the JSON {message:"Bad Username or Password"}
+	Then I should receive a SUCCESS response with the JSON array []
 
 Scenario: Username has the email extension on it (e.g. "clubleads@gmail.com" instead of "clubleads")
     ## TODO: Need to look at the current index.php file to see how that works
