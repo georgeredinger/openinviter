@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="brs" default="build">
+
+    <property name="fs"        value="${file.separator}"/>
+    <property name="build.dir" location="${basedir}${fs}build"/>
+    <property name="src.dir"   location="${basedir}${fs}src"/>
+    <property name="test.dir"  location="${basedir}${fs}tests"/>
+
+    <dirset dir="${basedir}" id="src.dirs">
+        <patternset>
+            <include name="src/**"/>
+            <include name="tests/**"/>
+            <exclude name="tests/_PHPUnitCommon/**"/>
+        </patternset>
+    </dirset>
+    <pathconvert pathsep=" " property="src.dirs" refid="src.dirs"/>
+    <fileset dir="${basedir}" id="src.files">
+        <patternset>
+            <include name="src/**"/>
+            <include name="tests/**"/>
+            <exclude name="tests/_PHPUnitCommon/**"/>
+        </patternset>
+    </fileset>
+    <pathconvert pathsep=" " property="src.files" refid="src.files"/>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="prepare" depends="clean">
+        
+        <mkdir dir="${build.dir}${fs}logs"/>
+        <mkdir dir="${build.dir}${fs}doc"/>
+        <mkdir dir="${build.dir}${fs}unittest"/>
+        <mkdir dir="${build.dir}${fs}unittest${fs}coverage"/>
+        <mkdir dir="${build.dir}${fs}unittest${fs}coverage${fs}source"/>
+
+    </target>
+
+    <target name="ide" depends="phpcpd-ide, phpmd-ide, phpcs, phpunit-ide"/>
+
+    <target name="phpunit" depends="prepare">
+        <exec dir="${basedir}"
+        executable="phpunit"
+        failonerror="true">
+            <arg line="--configuration ${test.dir}${fs}_PHPUnitCommon${fs}conf${fs}hudson${fs}phpunit.xml ${test.dir}"/>
+        </exec>
+    </target>
+
+    <target name="phpunit-ide">
+        <exec dir="${basedir}"
+        executable="phpunit"
+        failonerror="true">
+            <arg line="--configuration ${test.dir}${fs}_PHPUnitCommon${fs}conf${fs}netbeans${fs}phpunit.xml --testdox ${test.dir}"/>
+        </exec>
+    </target>
+
+    <target name="phpcs">
+        <exec dir="${basedir}"
+		executable="phpcs"
+		failonerror="false">
+            <arg line="--standard=PHPCS --extensions=php ${src.files}"/>
+        </exec>
+    </target>
+
+    <target name="phpcs-ci" depends="prepare">
+        <exec dir="${basedir}"
+		executable="phpcs"
+		output="${build.dir}${fs}logs${fs}checkstyle.xml"
+		failonerror="false">
+            <arg line="--report=checkstyle --standard=PHPCS --extensions=php ${src.files}"/>
+        </exec>
+    </target>
+
+    <target name="phploc" depends="prepare">
+        <exec dir="${basedir}"
+			executable="phploc"
+			failonerror="false">
+            <arg line="src"/>
+        </exec>
+    </target>
+
+    <target name="phpmd" depends="prepare">
+        <exec dir="${basedir}"
+        executable="phpmd"
+        failonerror="false">
+            <arg line=". xml codesize
+              --reportfile ${build.dir}${fs}logs${fs}pmd.xml"/>
+        </exec>
+    </target>
+    
+    <target name="phpmd-ide">
+        <exec dir="${basedir}"
+        executable="phpmd"
+        failifexecutionfails="true"
+        
+        failonerror="true">
+            <arg line=". text codesize"/>
+        </exec>
+    </target>
+
+    <target name="phpcpd" depends="prepare">
+        <exec
+    	    executable="phpcpd">
+            <arg line="--min-tokens 20 --log-pmd ${build.dir}${fs}logs${fs}pmd-cpd.xml ${src.dirs}"/>
+        </exec>
+    </target>
+    
+    <target name="phpcpd-ide">
+        <exec
+            failonerror="true"
+    	    executable="phpcpd">
+            <arg line="--min-tokens 10 ${src.dirs}"/>
+        </exec>
+    </target>
+
+    <target name="document" depends="doxygen"/>
+
+    <target name="phpdoc">
+        <exec dir="${basedir}"
+		executable="phpdoc"
+		failonerror="false">
+            <arg line="-t ${build.dir}/doc/ -o HTML:default:default -d ${src.dirs}/"/>
+        </exec>
+    </target>
+
+    <target name="doxygen">
+        <exec dir="${basedir}"
+		executable="doxygen"
+		failonerror="false"/>
+    </target>
+
+    <target name="build" depends="phpunit"></target>
+
+    <target name="ci-build" depends="phpcs-ci, phpmd, phpcpd, phpunit, document"/>
+</project>
