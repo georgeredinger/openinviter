@@ -1,0 +1,21 @@
+Openinviter restful web-api
+
+Server requirements
+* PHP 5.2+
+* Apache 2 with mod_rewrite enabled
+* Apache 2 host configured with "AllowOverride All"
+* Write permission on <app_dir>/vendor/OpenInviter/conf
+* Write permission to a directory where cookies should be stored (/tmp will do on Unix)
+
+Deploying
+* Point document root to src dir
+* Make sure vendor dir is next to src dir
+* Make sure .htaccess file is in src dir
+* Make sure mod_rewrite and 
+
+Optional build requirements
+* Ant 1.8.0+
+* PHPUnit 3.4.15
+* phpcs 1.2.2+
+* phpmd 0.2.6+
+

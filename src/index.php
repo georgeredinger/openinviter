@@ -2,54 +2,72 @@
 /**
  * Entry point for BRS system
  *
- * @author meza <meza@meza.hu>
+ * PHP Version: PHP 5
+ *
+ * @category File
+ * @package  Brs
+ * @author   meza <meza@meza.hu>
+ * @license  GPL3.0
+ *                    GNU GENERAL PUBLIC LICENSE
+ *                       Version 3, 29 June 2007
+ *
+ * Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+ * Everyone is permitted to copy and distribute verbatim copies
+ * of this license document, but changing it is not allowed.
+ * @link     http://www.meza.hu
  */
 
-require_once('Brs.php');
+require_once 'Brs.php';
 
-$application = new Brs();
-$success     = $application->run(
-    new Handlr(),
-    new HttpClientRequestParser(),
-    new Restlr()
+$handlr        = new Handlr();
+$requestParser = new HttpClientRequestParser();
+$restlr        = new Restlr();
+$appConfig     = new BrsConfig();
+$application   = new Brs($appConfig);
+$success       = $application->run(
+    $handlr,
+    $requestParser,
+    $restlr
 );
-
-exit((int)!$success);
 
 
 /**
  * Autoloader method
  *
+ * @param string $className Class to load
+ *
  * @staticvar array $classes   Class cache
- * @param string    $className Class to load
  *
  * @return bool
- *
  */
 function __autoload($className)
-    {
-        static $classes;
-        if (true === empty($classes)) {
-            $classes = include getcwd().'/classes.php';
-        }
+{
+    static $classes;
+    if (true === empty($classes)) {
+        $classes = include getcwd().'/classes.php';
+    }
 
-        if (false === array_key_exists($className, $classes)) {
-            return false;
-        }
+    if (false === array_key_exists($className, $classes)) {
+        return false;
+    }
 
-        $pos = strrpos($className, '\\'); //namespace hack
-        $trimmedClassName = $className;
-        if (false !== $pos) {
-            $trimmedClassName = substr($trimmedClassName, ($pos + 1));
-        }
+    // Namespace hack.
+    $pos = strrpos($className, '\\');
 
+    $trimmedClassName = $className;
+    if (false !== $pos) {
+        $trimmedClassName = substr($trimmedClassName, ($pos + 1));
+    }
+
+    $file = getcwd().$classes[$className].$trimmedClassName.'.php';
+    if (false === file_exists($file)) {
         $file = getcwd().$classes[$className].$trimmedClassName.'.php';
-        if (false === file_exists($file)) {
-            $file = getcwd().$classes[$className].$trimmedClassName.'.php';
-        }
+    }
 
-        return include_once $file;
+    return include_once $file;
 
-    }//end __autoload()
+}//end __autoload()
 
+
+exit((int) !$success);
 ?>

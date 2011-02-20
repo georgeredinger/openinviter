@@ -48,6 +48,7 @@ class Brs
      */
     public function __construct(BrsConfig $config)
     {
+        $this->_config = $config;
 
     }//end __construct()
 
