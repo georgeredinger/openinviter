@@ -1,8 +1,8 @@
 <?php
 /**
- * HttpUnauthorizedConstraint.php
+ * HttpNoContentConstraint.php
  *
- * Holds the HttpUnauthorizedConstraint class
+ * Holds the HttpNoContentConstraint class
  *
  * PHP Version: PHP 5
  *
@@ -20,7 +20,7 @@
  */
 
 /**
- * The HttpUnauthorizedConstraint class is responsible for ...
+ * The HttpNoContentConstraint class is responsible for ...
  *
  * PHP Version: PHP 5
  *
@@ -36,18 +36,18 @@
  * of this license document, but changing it is not allowed.
  * @link     http://www.meza.hu
  */
-class HttpUnauthorizedConstraint extends HttpStatusConstraint
+class HttpNoContentConstraint extends HttpStatusConstraint
 {
 
 
     /**
      * Provide expected code
      *
-     * @return int 401
+     * @return int 204
      */
     public function getExpectedCode()
     {
-        return 401;
+        return 204;
 
     }//end getExpectedCode()
 
