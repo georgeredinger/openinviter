@@ -16,7 +16,7 @@ Background:
 Scenario: Successfully fetch the contact list from each provider
 
 	  When I POST to /get_contacts?service=gmail&username=clubleads@gmail.com&password=baseball
-	  Then I should receive a SUCCESS response with the JSON array [{email:"sue@test.com"},{"eric@test.com"}]
+	  Then I should receive a SUCCESS response with the JSON array [{"email":"sue@test.com"},{"email":"eric@test.com"}]
 
 Scenario: Bad Username
 
