@@ -1,4 +1,7 @@
-Openinviter restful web-api
+Openinviter restful web-api MOCK
+
+CURRENT VERSION ONLY IMITATES THE TRUE INTENT, DOES OLNY WORK WITH DATA
+SPECIFIED IN THE FEATURES FILE. 
 
 Server requirements
 * PHP 5.2+
