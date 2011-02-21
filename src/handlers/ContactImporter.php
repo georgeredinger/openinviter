@@ -56,6 +56,11 @@ class ContactImporter extends Resource implements Post
      */
     private $_urlData;
 
+    /**
+     * @var OpenInviterInterface OI service
+     */
+    private $_service;
+
 
     /**
      * constructs the object
@@ -69,10 +74,12 @@ class ContactImporter extends Resource implements Post
     public function  __construct(
         BrsConfig $config,
         HttpClientRequest $request,
+        OpenInviterInterface $service,
         array $urlData=array()
     ) {
         $this->_config  = $config;
         $this->_request = $request;
+        $this->_service = $service;
         $this->_urlData = $urlData;
 
     }//end __construct()
@@ -85,21 +92,23 @@ class ContactImporter extends Resource implements Post
      */
     public function executePost()
     {
+//        error_reporting(E_ALL);
+
+        $this->_service->startPlugin($_POST['service']);
+        print_r($this->_service->getInternalError());
+
         if (false === $this->_isValid($_POST['username'], $_POST['password'])) {
             header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
             echo json_encode(array('message' => 'Bad Username or Password'));
             return;
         }
 
-        if ($_POST['service'] === 'empty') {
-            echo json_encode(array());
-            return;
-        }
 
-        $accounts = array(
-                     array('email' => 'sue@test.com'),
-                     array('email' => 'eric@test.com'),
-                    );
+        $contacts = $this->_service->getMyContacts();
+        $accounts = array();
+        foreach($contacts as $email => $name) {
+            $accounts[] = array('email' => $email);
+        }
 
         echo json_encode($accounts);
 
@@ -108,7 +117,6 @@ class ContactImporter extends Resource implements Post
 
     /**
      * Determines if the user is valid or not.
-     * For mocking purposes, it only accepts one account.
      *
      * @param string $username The username trying to access a service
      * @param string $password The password for the username
@@ -117,11 +125,11 @@ class ContactImporter extends Resource implements Post
      */
     private function _isValid($username, $password)
     {
-        if ($username === 'clubleads@gmail.com' && $password === 'baseball') {
-            return true;
+        if (false === $this->_service->login($username, $password)) {
+            return false;
         }
 
-        return false;
+        return true;
 
     }//end _isValid()
 

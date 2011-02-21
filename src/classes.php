@@ -18,6 +18,8 @@
 return array(
         'Brs'                              => '/',
         'BrsConfig'                        => '/',
+        'BrsOpeninviter'                   => '/',
+        'OpenInviterInterface'             => '/',
         'Head'                             => '/../vendor/restlr/src/',
         'Get'                              => '/../vendor/restlr/src/',
         'Options'                          => '/../vendor/restlr/src/',
@@ -60,5 +62,7 @@ return array(
         'HttpHeaderComposite'              => '/../vendor/http/src/',
         'HttpTestCaseBase'                 => '/../tests/_PHPUnitCommon/phpunit_helpers/',
         'BrsTestCaseBase'                  => '/../tests/',
+        'openinviter'                      => '/../vendor/OpenInviter/',
+        '_hosted'                          => '/../vendor/OpenInviter/',
        );
 ?>

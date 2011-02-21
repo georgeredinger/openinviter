@@ -19,11 +19,21 @@
 
 require_once 'Brs.php';
 
+$openInviterConfig = array(
+                      'username'        => 'myixora',
+                      'private_key'     => 'b2426a7c739dafa725d7fc50f9b164c3',
+                      'cookie_path'     => '/tmp',
+                      'message_body'    => 'You are invited to http://myixora.com',
+                      'message_subject' => ' is inviting you to http://myixora.com',
+                      'stats'           => false,
+                     );
+
+$openInviter   = new BrsOpeninviter($openInviterConfig);
 $handlr        = new Handlr();
 $requestParser = new HttpClientRequestParser();
 $restlr        = new Restlr();
 $appConfig     = new BrsConfig();
-$application   = new Brs($appConfig);
+$application   = new Brs($appConfig, $openInviter);
 $success       = $application->run(
     $handlr,
     $requestParser,

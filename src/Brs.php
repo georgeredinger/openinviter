@@ -38,17 +38,26 @@ class Brs
      */
     private $_config;
 
+    /**
+     * @var OpenInviterInterface the OI service
+     */
+    private $_service;
+
 
     /**
      * Create the object
      *
-     * @param BrsConfig $config Configuration
+     * @param BrsConfig            $config  Configuration
+     * @param OpenInviterInterface $service The openinviter to use
      *
      * @return Brs
      */
-    public function __construct(BrsConfig $config)
-    {
-        $this->_config = $config;
+    public function __construct(
+        BrsConfig $config,
+        OpenInviterInterface $service
+    ) {
+        $this->_config  = $config;
+        $this->_service = $service;
 
     }//end __construct()
 
@@ -100,7 +109,11 @@ class Brs
     private function _getResource(array $routeTable, HttpClientRequest $request)
     {
         if (true === isset($routeTable[$request->uri])) {
-            $result = new $routeTable[$request->uri]($this->_config, $request);
+            $result = new $routeTable[$request->uri](
+                $this->_config,
+                $request,
+                $this->_service
+            );
             return $result;
         }
 
@@ -108,7 +121,12 @@ class Brs
             if (0 < preg_match('`^'.$uriPattern.'$`', $request->uri, $match)) {
                 $keys   = array_filter(array_keys($match), 'is_string');
                 $match  = array_intersect_key($match, array_flip($keys));
-                $result = new $resourceName($this->_config, $request, $match);
+                $result = new $resourceName(
+                    $this->_config,
+                    $request,
+                    $this->_service,
+                    $match
+                );
                 return $result;
             }
         }
