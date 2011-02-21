@@ -22,3 +22,25 @@ Optional build requirements
 * phpcs 1.2.2+
 * phpmd 0.2.6+
 
+
+To Run PhP Unit Tests:
+
+Add the /etc/hosts file entry: 
+
+   127.0.0.1	brs-api.radsoft.com.lh
+
+Copy the contents of the vhost.template into your Apache httpd.conf file
+
+Getting PhP UNIT running:
+	sudo pear upgrade PEAR
+    sudo pear channel-discover pear.phpunit.de
+	sudo pear channel-discover components.ez.no
+	sudo pear channel-discover pear.symfony-project.com
+	sudo pear install --alldeps phpunit/PHPUnit-3.4.15
+	sudo pear channel-discover pear.php-tools.net
+	sudo pear install pat/vfsStream-beta
+	
+
+Running unit tests:
+    ant phpunit-ide
+	
