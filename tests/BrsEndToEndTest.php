@@ -51,6 +51,10 @@ class BrsEndToEndTest extends HttpTestCaseBase
         error_reporting(E_ALL);
         $this->hostname = 'http://brs-api.radsoft.com.lh';
 
+        if (true === isset($_ENV['BRS_OPENINVITER_HOST'])) {
+            $this->hostname = $_ENV['BRS_OPENINVITER_HOST'];
+        }
+
     }//end setUp()
 
 
