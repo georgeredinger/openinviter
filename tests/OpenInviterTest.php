@@ -79,16 +79,23 @@ class OpenInviterTest extends BrsEndToEndTest
     /**
      * Abstract call to the service assuring the response is OK
      *
-     * @param array                $data       The POST data to send
+     * @param string               $service    The service to use
+     * @param string               $username   The username for the service
+     * @param string               $password   The password
      * @param HttpStatusConstraint $constraint A http status constraint
      *
      * @return HttpResponse
      */
-    private function _useWith(array $data, HttpStatusConstraint $constraint)
-    {
-        $response = $this->post(
-            $this->hostname.$this->url,
-            $data
+    private function _useWith(
+        $service,
+        $username,
+        $password,
+        HttpStatusConstraint $constraint
+    ) {
+        $response = $this->get(
+            $this->hostname.$this->url.'/'.$service,
+            array(),
+            array('Authorization' => 'Basic '.base64_encode($username.':'.$password))
         );
         $this->assertThat($response, $constraint);
 
@@ -110,11 +117,9 @@ class OpenInviterTest extends BrsEndToEndTest
     {
         $constraint = new HttpOKConstraint();
         $response   = $this->_useWith(
-            array(
-             'service'  => 'gmail',
-             'username' => $this->_testEmailAccount,
-             'password' => $this->_testEmailPassword,
-            ),
+            'gmail',
+            $this->_testEmailAccount,
+            $this->_testEmailPassword,
             $constraint
         );
 
@@ -135,15 +140,14 @@ class OpenInviterTest extends BrsEndToEndTest
      */
     public function testBadUsername()
     {
-        $constraint   = new HttpUnauthorizedConstraint();
-        $response     = $this->_useWith(
-            array(
-             'service'  => 'gmail',
-             'username' => 'bad_'.$this->_testEmailAccount,
-             'password' => $this->_testEmailPassword,
-            ),
+        $constraint = new HttpUnauthorizedConstraint();
+        $response   = $this->_useWith(
+            'gmail',
+            'bad_'.$this->_testEmailAccount,
+            $this->_testEmailPassword,
             $constraint
         );
+
         $expectedJSON = '{"message":"Bad Username or Password"}';
         $this->assertEquals($expectedJSON, $response->data);
 
@@ -163,11 +167,9 @@ class OpenInviterTest extends BrsEndToEndTest
     {
         $constraint   = new HttpUnauthorizedConstraint();
         $response     = $this->_useWith(
-            array(
-             'service'  => 'gmail',
-             'username' => $this->_testEmailAccount,
-             'password' => 'bad_'.$this->_testEmailPassword,
-            ),
+            'gmail',
+            $this->_testEmailAccount,
+            'bad_'.$this->_testEmailPassword,
             $constraint
         );
         $expectedJSON = '{"message":"Bad Username or Password"}';
@@ -188,11 +190,9 @@ class OpenInviterTest extends BrsEndToEndTest
     {
         $constraint = new HttpOKConstraint();
         $response   = $this->_useWith(
-            array(
-             'service'  => 'empty',
-             'username' => $this->_testEmailAccount,
-             'password' => $this->_testEmailPassword,
-            ),
+            'empty',
+            $this->_testEmailAccount,
+            $this->_testEmailPassword,
             $constraint
         );
 

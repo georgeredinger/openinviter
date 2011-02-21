@@ -24,7 +24,7 @@
  *
  * PHP Version: PHP 5
  *
- * @handles /get_contacts
+ * @handles /get_contacts/{service:chars}
  *
  * @category Class
  * @package  Brs
@@ -38,7 +38,7 @@
  * of this license document, but changing it is not allowed.
  * @link     http://www.meza.hu
  */
-class ContactImporter extends Resource implements Post
+class ContactImporter extends Resource implements Get
 {
 
     /**
@@ -65,9 +65,10 @@ class ContactImporter extends Resource implements Post
     /**
      * constructs the object
      *
-     * @param BrsConfig         $config  The configuration object
-     * @param HttpClientRequest $request The Http request
-     * @param array             $urlData Data from the ulr (if any)
+     * @param BrsConfig            $config  The configuration object
+     * @param HttpClientRequest    $request The Http request
+     * @param OpenInviterInterface $service The OI service to use
+     * @param array                $urlData Data from the ulr (if any)
      *
      * @return ContactImporter
      */
@@ -86,33 +87,38 @@ class ContactImporter extends Resource implements Post
 
 
     /**
-     * Handles the post request
+     * Handles the Get request
      *
      * @return void
      */
-    public function executePost()
+    public function executeGet()
     {
-//        error_reporting(E_ALL);
+        try {
+            $this->_service->startPlugin($this->_urlData['service']);
 
-        $this->_service->startPlugin($_POST['service']);
-        print_r($this->_service->getInternalError());
+            $user = $_SERVER['PHP_AUTH_USER'];
+            $pass = $_SERVER['PHP_AUTH_PW'];
+            if (false === $this->_isValid($user, $pass)) {
+                header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
+                echo json_encode(array('message' => 'Bad Username or Password'));
+                return;
+            }
 
-        if (false === $this->_isValid($_POST['username'], $_POST['password'])) {
-            header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
-            echo json_encode(array('message' => 'Bad Username or Password'));
+            $contacts = $this->_service->getMyContacts();
+            $accounts = array();
+            foreach ($contacts as $email => $name) {
+                $accounts[] = array('email' => $email);
+            }
+
+            echo json_encode($accounts);
+
+        } catch (Exception $e) {
+            header($_SERVER['SERVER_PROTOCOL'].' 500 Internal Server Error');
+            echo json_encode($e->getMessage());
             return;
-        }
+        }//end try
 
-
-        $contacts = $this->_service->getMyContacts();
-        $accounts = array();
-        foreach($contacts as $email => $name) {
-            $accounts[] = array('email' => $email);
-        }
-
-        echo json_encode($accounts);
-
-    }//end executePost()
+    }//end executeGet()
 
 
     /**

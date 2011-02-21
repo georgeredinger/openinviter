@@ -67,14 +67,15 @@ class HttpTestCaseBase extends CommonTestCaseBase
     /**
      * Issue a get
      *
-     * @param string $url  The url
-     * @param array  $data The data
+     * @param string $url     The url
+     * @param array  $data    The data
+     * @param array  $headers The extra headers of the request.
      *
      * @return HttpResponse
      */
-    public function get($url, array $data=array())
+    public function get($url, array $data=array(), array $headers=array())
     {
-        return $this->_request($url, 'GET', $data);
+        return $this->_request($url, 'GET', $data, $headers);
 
     }//end get()
 
@@ -156,14 +157,19 @@ class HttpTestCaseBase extends CommonTestCaseBase
     /**
      * Make a request.
      *
-     * @param string $url    The url to make the call on.
-     * @param string $method The method to call.
-     * @param array  $data   The data of the request.
+     * @param string $url     The url to make the call on.
+     * @param string $method  The method to call.
+     * @param array  $data    The data of the request.
+     * @param array  $headers The extra headers of the request.
      *
      * @return HttpResponse
      */
-    private function _request($url, $method, array $data=array())
-    {
+    private function _request(
+        $url,
+        $method,
+        array $data=array(),
+        array $headers=array()
+    ) {
         $http             = $this->getHttp();
         $param            = new HttpParams();
         $param->url       = $url;
@@ -182,6 +188,7 @@ class HttpTestCaseBase extends CommonTestCaseBase
             $param->customMethod = $method;
         }
 
+        $param->headers = array_merge($param->headers, $headers);
         return $http->request($param);
 
     }//end _request()

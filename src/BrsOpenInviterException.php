@@ -1,9 +1,13 @@
 <?php
 /**
- * Config value object for Brs app
+ * BrsOpenInviterException.php
+ *
+ * Holds the BrsOpenInviterException class
+ *
+ * PHP Version: PHP 5
  *
  * @category File
- * @package  Brs
+ * @package  brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -16,10 +20,12 @@
  */
 
 /**
- * Configuration value object
+ * The BrsOpenInviterException is the generic exception for open inviter
+ *
+ * PHP Version: PHP 5
  *
  * @category Class
- * @package  Brs
+ * @package  brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -30,28 +36,9 @@
  * of this license document, but changing it is not allowed.
  * @link     http://www.meza.hu
  */
-class BrsConfig
+class BrsOpenInviterException extends Exception
 {
-
-
-    /**
-     * Return open inviter config array
-     *
-     * @return array
-     */
-    public function getOpenInviterConfigArray()
-    {
-        return array(
-                'username'        => 'myixora',
-                'private_key'     => 'b2426a7c739dafa725d7fc50f9b164c3',
-                'cookie_path'     => '/tmp',
-                'message_body'    => 'You are invited to http://myixora.com',
-                'message_subject' => ' is inviting you to http://myixora.com',
-                'stats'           => false,
-               );
-
-    }//end getOpenInviterConfigArray()
-
+    //put your code here
 
 }//end class
 
