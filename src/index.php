@@ -41,8 +41,8 @@ $success       = $application->run(
  */
 function createService($openInviterConfig)
 {
-    $service = new BrsStubOpeninviter($openInviterConfig);
-//    $service = new BrsOpeninviter($openInviterConfig);
+//    $service = new BrsStubOpeninviter($openInviterConfig);
+    $service = new BrsOpeninviter($openInviterConfig);
     return $service;
 
 }//end createService()
