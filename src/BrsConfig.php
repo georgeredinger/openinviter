@@ -34,6 +34,12 @@ class BrsConfig
 {
 
 
+    public function realmName()
+    {
+        return 'BRS System';
+    }
+
+
     /**
      * Return open inviter config array
      *

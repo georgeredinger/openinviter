@@ -119,6 +119,7 @@ class BrsStubOpeninviter extends openinviter implements OpenInviterInterface
 
         $accounts = array(
                      'sue@test.com'  => 'sue doe',
+                     'sue@test.com'  => 'sue doe2',
                      'eric@test.com' => 'eric doe',
                     );
 

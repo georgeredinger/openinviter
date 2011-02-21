@@ -99,6 +99,8 @@ class ContactImporter extends Resource implements Get
             $user = $_SERVER['PHP_AUTH_USER'];
             $pass = $_SERVER['PHP_AUTH_PW'];
             if (false === $this->_isValid($user, $pass)) {
+                $realm = $this->_config->realmName();
+                header('WWW-Authenticate: Basic realm="'.$realm.'"');
                 header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
                 echo json_encode(array('message' => 'Bad Username or Password'));
                 return;
@@ -110,6 +112,7 @@ class ContactImporter extends Resource implements Get
                 $accounts[] = array('email' => $email);
             }
 
+            array_unique($accounts);
             echo json_encode($accounts);
 
         } catch (Exception $e) {
