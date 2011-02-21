@@ -7,7 +7,7 @@
  * PHP Version: PHP 5
  *
  * @category File
- * @package  brs
+ * @package  Brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -25,7 +25,7 @@
  * PHP Version: PHP 5
  *
  * @category Class
- * @package  brs
+ * @package  Brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -41,29 +41,31 @@ interface OpenInviterInterface
 
 
     /**
-	 * Login function
-	 *
-	 * Acts as a wrapper function for the plugin's
-	 * login function.
-	 *
-	 * @param string $user The username being logged in
-	 * @param string $pass The password for the username being logged in
-	 * @return mixed FALSE if the login credentials don't match the plugin's
+     * Login function
+     *
+     * Acts as a wrapper function for the plugin's
+     * login function.
+     *
+     * @param string $user The username being logged in
+     * @param string $pass The password for the username being logged in
+     * 
+     * @return mixed FALSE if the login credentials don't match the plugin's
      * requirements or the result of the plugin's login function.
-	 */
-	public function login($user,$pass);
+     */
+    public function login($user,$pass);
 
 
     /**
-	 * Get the current user's contacts
-	 *
-	 * Acts as a wrapper function for the plugin's
-	 * getMyContacts function.
-	 *
-	 * @return mixed The result of the plugin's getMyContacts function.
-	 */
-	public function getMyContacts();
+     * Get the current user's contacts
+     *
+     * Acts as a wrapper function for the plugin's
+     * getMyContacts function.
+     *
+     * @return mixed The result of the plugin's getMyContacts function.
+     */
+    public function getMyContacts();
 
-}//end class
+
+}//end interface
 
 ?>

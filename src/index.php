@@ -35,13 +35,18 @@ $success       = $application->run(
 /**
  * Create the service
  *
+ * @param array $openInviterConfig The OI config
+ *
  * @return OpenInviterInterface
  */
 function createService($openInviterConfig)
 {
-    return new BrsStubOpeninviter($openInviterConfig);
-//    return new BrsOpeninviter($openInviterConfig);
-}
+    $service = new BrsStubOpeninviter($openInviterConfig);
+//    $service = new BrsOpeninviter($openInviterConfig);
+    return $service;
+
+}//end createService()
+
 
 /**
  * Autoloader method

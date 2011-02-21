@@ -90,7 +90,7 @@ class BrsOpeninviter extends openinviter implements OpenInviterInterface
                 $e->getCode(),
                 $e
             );
-        }
+        }//end try
 
     }//end startPlugin()
 
@@ -111,14 +111,13 @@ class BrsOpeninviter extends openinviter implements OpenInviterInterface
     public function login($user,$pass)
     {
         try {
-            
             $result = parent::login($user, $pass);
 
             if (false === $this->_didPreviousCallSucceed()) {
                 throw new BrsOpenInviterException($this->getInternalError());
             }
 
-            if (false == $result) {
+            if (false === $result) {
                 return false;
             }
 
@@ -130,22 +129,22 @@ class BrsOpeninviter extends openinviter implements OpenInviterInterface
                 $e->getCode(),
                 $e
             );
-        }
+        }//end try
 
     }//end login()
 
 
     /**
-	 * Get the current user's contacts
-	 *
-	 * Acts as a wrapper function for the plugin's
-	 * getMyContacts function.
-	 *
-	 * @return array
+     * Get the current user's contacts
+     *
+     * Acts as a wrapper function for the plugin's
+     * getMyContacts function.
+     *
+     * @return array
      *
      * @throws BrsOpenInviterException
-	 */
-	public function getMyContacts()
+     */
+    public function getMyContacts()
     {
         try {
             $result = parent::getMyContacts();
@@ -168,7 +167,7 @@ class BrsOpeninviter extends openinviter implements OpenInviterInterface
                 $e->getCode(),
                 $e
             );
-        }
+        }//end try
 
     }//end getMyContacts()
 

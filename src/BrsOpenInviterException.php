@@ -7,7 +7,7 @@
  * PHP Version: PHP 5
  *
  * @category File
- * @package  brs
+ * @package  Brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -25,7 +25,7 @@
  * PHP Version: PHP 5
  *
  * @category Class
- * @package  brs
+ * @package  Brs
  * @author   meza <meza@meza.hu>
  * @license  GPL3.0
  *                    GNU GENERAL PUBLIC LICENSE
@@ -38,7 +38,6 @@
  */
 class BrsOpenInviterException extends Exception
 {
-    //put your code here
 
 }//end class
 
