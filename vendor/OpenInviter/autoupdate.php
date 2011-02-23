@@ -4,8 +4,8 @@ if (!is_writable(dirname(__FILE__))) { echo "<b>OpenInviter</b> folder is not wr
 if (!is_writable(dirname(__FILE__).'/plugins')) { echo "<b>OpenInviter/plugins</b> folder is not writable. Updates will not be posible<br>";exit; }
 if (file_exists(dirname(__FILE__)."/postinstall.php")) { echo "Delete <b>postinstall.php</b> before running the autoupdater";exit; }
 include(dirname(__FILE__).'/openinviter.php');
-$inviter=new OpenInviter();
-class update extends OpenInviter_Base
+$inviter=new openinviter();
+class update extends openinviter_base
 	{
 	public $plugins;
 	
@@ -21,13 +21,23 @@ class update extends OpenInviter_Base
 			$update_files=$this->parseXmlUpdates($xml);
 			$update=true;$newFiles=array();
 			foreach($update_files as $name_file=>$arrayfile)
-				if ($arrayfile['type']=='new') 
-					if (isset($this->plugins[$arrayfile['plugin_type']][$name_file]))
-						{
-						if (!empty($this->plugins[$arrayfile['plugin_type']][$name_file]['autoupdate']))  $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']); 
-						elseif($arrayfile['plugin_type']=='base') $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']);
+				if ($arrayfile['type']=='new')
+					{
+					if(!empty($this->settings['update_files']))
+						{ 
+						if (isset($this->plugins[$arrayfile['plugin_type']][$name_file]))
+							{
+							if (!empty($this->plugins[$arrayfile['plugin_type']][$name_file]['autoupdate']))  $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']); 
+							elseif($arrayfile['plugin_type']=='base') $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']);
+							}
 						}
-					
+					else
+						{
+						if($arrayfile['plugin_type']=='base') $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']);
+						else $newFiles[$name_file]=array('sum'=>$arrayfile['sum'],'plugin_type'=>$arrayfile['plugin_type']); 	
+						}
+					}
+		
 			foreach ($newFiles as $name_file=>$arrayFile)
 				{
 				$headers=array('Content-Type'=>'application/xml','X_USER'=>$this->settings['username'],'X_SIGNATURE'=>$this->makeSignature($this->settings['private_key'],$this->xmlFile($name_file)));					
@@ -91,18 +101,19 @@ class update extends OpenInviter_Base
 	
 	protected function getUpdateFilePath($plugin)
 		{
-		if ($plugin=='openinviter' OR $plugin=='openinviter_base') return dirname(__FILE__)."/{$plugin}.php";
-		else return dirname(__FILE__)."/plugins/{$plugin}.php";
+		if ($plugin=='openinviter') return dirname(__FILE__)."/{$plugin}.php";
+		elseif($plugin=='_base') return dirname(__FILE__)."/plugins/{$plugin}.php";
+		else return dirname(__FILE__)."/plugins/{$plugin}.plg.php";
 		} 	
 	
 	public function xmlFile($file_name)
 		{
-		return "<file>{$file_name}</file>";
+		return "<request><api_version>1.8</api_version><file>{$file_name}</file></request>";
 		}
 	
 	public function xmlVersions()
 		{
-		$xml="<services>";
+		$xml="<request><api_version>1.8</api_version><services>";
 		if (!empty($this->plugins))
 			foreach ($this->plugins as $type=>$dummy)
 				foreach ($dummy as $plugin=>$details)
@@ -113,7 +124,7 @@ class update extends OpenInviter_Base
 								<version></version>
 							</service>
 				   ";
-		return $xml.="</services>";
+		return $xml.="</services></request>";
 		}
 	
 	public function checkVersions()
@@ -189,7 +200,7 @@ class update extends OpenInviter_Base
 		
 	}
 $plugins=$inviter->getPlugins(true);
-$files_base['base']=array('openinviter'=>array('name'=>'openinviter','version'=>$inviter->getVersion()),'openinviter_base'=>array('name'=>'openinviter_base','version'=>$inviter->getVersion()));
+$files_base['base']=array('openinviter'=>array('name'=>'openinviter','version'=>$inviter->getVersion()),'_base'=>array('name'=>'_base','version'=>$inviter->getVersion()));
 $update=new update();
 $update->settings=$inviter->settings;
 $update->plugins=(!empty($plugins)?array_merge($files_base,$plugins):$files_base);

@@ -1,7 +1,7 @@
 <?php
 $_pluginInfo=array(
 	'name'=>'Live/Hotmail',
-	'version'=>'1.6.4',
+	'version'=>'1.6.6',
 	'description'=>"Get the contacts from a Windows Live/Hotmail account",
 	'base_version'=>'1.8.0',
 	'type'=>'email',
@@ -166,9 +166,13 @@ class hotmail extends openinviter_base
 			return false;	
 			}
 		$res=html_entity_decode(urldecode(str_replace('\x', '%', $res)),ENT_QUOTES, "UTF-8");		
-		$contacts=array();
-		if (preg_match_all("#\'\,\[\'(.+)\@(.+)\'#U",$res,$matches))						
-			foreach($matches[1] as $key=>$value)if (!empty($matches[2][$key])) $contacts["{$value}@{$matches[2][$key]}"]=array("first_name"=>$value,"email_1"=>"{$value}@{$matches[2][$key]}");										
+		$contacts=array();					
+		if (preg_match_all("#\'\,\[\'(.+)\@(.+)\'#U",$res,$matches))
+			{
+			if (!empty($matches[1][0]) AND (!empty($matches[2][0]))) { unset($matches[1][0]); unset($matches[2][0]); }			
+			foreach($matches[1] as $key=>$value)
+				if (!empty($matches[2][$key])) $contacts["{$value}@{$matches[2][$key]}"]=array("first_name"=>"","email_1"=>"{$value}@{$matches[2][$key]}");				
+			}									
 		foreach ($contacts as $email=>$name) if (!$this->isEmail($email)) unset($contacts[$email]);
 		return $this->returnContacts($contacts);
 		}

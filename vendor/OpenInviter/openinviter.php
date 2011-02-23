@@ -8,17 +8,18 @@
  * @author OpenInviter
  * @version 1.7.6
  */
-class OpenInviter
+class openinviter
 	{
 	public $pluginTypes=array('email'=>'Email Providers','social'=>'Social Networks');
-	private $ignoredFiles=array('default.php'=>'','index.php'=>'');
-	private $version='1.7.8';
+	private $version='1.9.4';
 	private $configStructure=array(
 		'username'=>array('required'=>true,'default'=>''),
 		'private_key'=>array('required'=>true,'default'=>''),
 		'message_body'=>array('required'=>false,'default'=>''),
 		'message_subject'=>array('required'=>false,'default'=>''),
-		'cookie_path'=>array('required'=>true,'default'=>''),
+		'plugins_cache_time'=>array('required'=>false,'default'=>1800),
+		'plugins_cache_file'=>array('required'=>true,'default'=>'oi_plugins.php'),
+		'cookie_path'=>array('required'=>true,'default'=>'/tmp'),
 		'local_debug'=>array('required'=>false,'default'=>false),
 		'remote_debug'=>array('required'=>false,'default'=>false),
 		'hosted'=>array('required'=>false,'default'=>false),
@@ -26,14 +27,21 @@ class OpenInviter
 		'stats'=>array('required'=>false,'default'=>false),
 		'stats_user'=>array('required'=>false,'default'=>''),
 		'stats_password'=>array('required'=>false,'default'=>''),
+		'update_files'=>array('required'=>false,'default'=>TRUE),
 	);
 	private $statsDB=false;
+	private $configOK;
+	private $basePath='';
+	private $availablePlugins=array();
+	private $currentPlugin=array();
 	
 	public function __construct()
 		{
-		include(dirname(__FILE__)."/config.php");
-		include_once(dirname(__FILE__)."/openinviter_base.php");
+		$this->basePath=dirname(__FILE__);
+		include($this->basePath."/config.php");
+		require_once($this->basePath."/plugins/_base.php");
 		$this->settings=$openinviter_settings;
+		$this->configOK=$this->checkConfig();
 		}
 	
 	private function checkConfig()
@@ -46,10 +54,10 @@ class OpenInviter
 			}
 		if (!empty($to_add))
 			{
-			$file_path=dirname(__FILE__)."/config.php";
+			$file_path=$this->basePath."/config.php";
+			foreach ($to_add as $option=>$value) $this->settings[$option]=$value;
 			if (is_writable($file_path))
 				{
-				foreach ($to_add as $option=>$value) $this->settings[$option]=$value;
 				$file_contents="<?php\n";
 				$file_contents.="\$openinviter_settings=array(\n".$this->arrayToText($this->settings)."\n);\n";
 				$file_contents.="?>";
@@ -79,10 +87,10 @@ class OpenInviter
 	private function statsCheck()
 		{
 		if (!$this->settings['stats']) return true;
-		$db_file=dirname(__FILE__).'/openinviter_stats.sqlite';
+		$db_file=$this->basePath.'/openinviter_stats.sqlite';
 		if (!file_exists($db_file))
 			{
-			if (!is_writable(dirname(__FILE__))) { $this->internalError="Unable to write stats. ".dirname(__FILE__)." is not writable";return false; }
+			if (!is_writable($this->basePath)) { $this->internalError="Unable to write stats. ".$this->basePath." is not writable";return false; }
 			if (!$this->statsOpenDB()) { $this->internalError="Unable to create the stats database.";return false; }
 			$this->statsQuery("CREATE TABLE oi_imports (id INTEGER PRIMARY KEY, service VARCHAR(16), contacts INTEGER, insert_dt DATETIME, insert_ip VARCHAR(15))");
 			$this->statsQuery("CREATE TABLE oi_messages (id INTEGER PRIMARY KEY, service VARCHAR(16), type CHAR(1), messages INTEGER, insert_dt DATETIME, insert_ip VARCHAR(15))");
@@ -96,7 +104,8 @@ class OpenInviter
 	private function statsOpenDB()
 		{
 		if (!$this->settings['stats']) return true;
-		if ($this->statsDB=sqlite_open(dirname(__FILE__).'/openinviter_stats.sqlite',0666)) return true;
+		if (function_exists('sqlite_open')) 
+			if ($this->statsDB=sqlite_open($this->basePath.'/openinviter_stats.sqlite',0666)) return true;
 		return false;
 		}
 	
@@ -135,45 +144,45 @@ class OpenInviter
 	 */	  
 	public function startPlugin($plugin_name,$getPlugins=false)
 		{
-		if (file_exists(dirname(__FILE__)."/postinstall.php")) { $this->internalError="You have to delete postinstall.php before using OpenInviter";return false; }
+		if (!$getPlugins) $this->currentPlugin=$this->availablePlugins[$plugin_name];
+		if (file_exists($this->basePath."/postinstall.php")) { $this->internalError="You have to delete postinstall.php before using OpenInviter";return false; }
+		elseif (!$this->configOK) return false;
+		elseif (!$this->statsCheck()) return false;
 		elseif ($this->settings['hosted'])
 			{
-			if (!file_exists(dirname(__FILE__)."/plugins/_hosted.php")) $this->internalError="Invalid service provider";
+			if (!file_exists($this->basePath."/plugins/_hosted.plg.php")) $this->internalError="Invalid service provider";
 			else
 				{
-				if (!class_exists('_hosted')) include_once(dirname(__FILE__)."/plugins/_hosted.php");
+				if (!class_exists('_hosted')) require_once($this->basePath."/plugins/_hosted.plg.php");
 				if ($getPlugins)
 					{
 					$this->servicesLink=new _hosted($plugin_name);
 					$this->servicesLink->settings=$this->settings;
 					$this->servicesLink->base_version=$this->version;
-					$this->servicesLink->base_path=dirname(__FILE__);
+					$this->servicesLink->base_path=$this->basePath;
 					}
 				else
 					{
-					if (!$this->checkConfig()) return false;
-					if (!$this->statsCheck()) return false;
 					$this->plugin=new _hosted($plugin_name);
 					$this->plugin->settings=$this->settings;
 					$this->plugin->base_version=$this->version;
-	    			$this->plugin->base_path=dirname(__FILE__);
+	    			$this->plugin->base_path=$this->basePath;
 	    			$this->plugin->hostedServices=$this->getPlugins();
 					}
 				}
 			}
-		elseif (file_exists(dirname(__FILE__)."/plugins/{$plugin_name}.php"))
+		elseif (file_exists($this->basePath."/plugins/{$plugin_name}.plg.php"))
 			{
 			$ok=true;
-			if (!class_exists($plugin_name)) include_once(dirname(__FILE__)."/plugins/{$plugin_name}.php");
-			if (!$this->checkConfig()) return false;
-			if (!$this->statsCheck()) return false;
+			if (!class_exists($plugin_name)) require_once($this->basePath."/plugins/{$plugin_name}.plg.php");
 			$this->plugin=new $plugin_name();
     		$this->plugin->settings=$this->settings;
     		$this->plugin->base_version=$this->version;
-    		$this->plugin->base_path=dirname(__FILE__);
-			if (file_exists(dirname(__FILE__)."/conf/{$plugin_name}.conf")) 
+    		$this->plugin->base_path=$this->basePath;
+    		$this->currentPlugin=$this->availablePlugins[$plugin_name];
+			if (file_exists($this->basePath."/conf/{$plugin_name}.conf")) 
 				{
-				include(dirname(__FILE__)."/conf/{$plugin_name}.conf");
+				include($this->basePath."/conf/{$plugin_name}.conf");
 				if (empty($enable)) $this->internalError="Invalid service provider";
 				if (!empty($messageDelay)) $this->plugin->messageDelay=$messageDelay; else  $this->plugin->messageDelay=1;
 				if (!empty($maxMessages)) $this->plugin->maxMessages=$maxMessages; else $this->plugin->maxMessages=10;
@@ -238,6 +247,14 @@ class OpenInviter
 		return $this->plugin->logout();	
 		}
 
+	public function writePlConf($name_file,$type)
+		{
+		if (!file_exists($this->basePath."/conf")) mkdir($this->basePath."/conf",0755,true);
+		if ($type=='social')  file_put_contents($this->basePath."/conf/{$name_file}.conf",'<?php $enable=true;$autoUpdate=true;$messageDelay=1;$maxMessages=10;?>');	
+		elseif($type=='email') file_put_contents($this->basePath."/conf/{$name_file}.conf",'<?php $enable=true;$autoUpdate=true; ?>');
+		elseif($type=='hosted') file_put_contents($this->basePath."/conf/{$name_file}.conf",'<?php $enable=false;$autoUpdate=true; ?>');		
+		}
+
 	/**
 	 * Get the installed plugins
 	 * 
@@ -245,68 +262,114 @@ class OpenInviter
 	 * 
 	 * @return mixed An array of the plugins available or FALSE if there are no plugins available.
 	 */
-	 
-	public function writePlConf($name_file,$type)
+	public function getPlugins($update=false,$required_details=false)
 		{
-		if (!file_exists(dirname(__FILE__)."/conf")) mkdir(dirname(__FILE__)."/conf",0755,true);
-		if ($type=='social')  file_put_contents(dirname(__FILE__)."/conf/{$name_file}.conf",'<?php $enable=true;$autoUpdate=true;$messageDelay=1;$maxMessages=10;?>');	
-		elseif($type=='email') file_put_contents(dirname(__FILE__)."/conf/{$name_file}.conf",'<?php $enable=true;$autoUpdate=true; ?>');
-		elseif($type=='hosted') file_put_contents(dirname(__FILE__)."/conf/{$name_file}.conf",'<?php $enable=false;$autoUpdate=true; ?>');		
-		}
-	 
-	public function getPlugins($update=false)
-		{
-		$plugins=array();$array_file=array();
-		$dir=dirname(__FILE__)."/plugins";
-		$temp=glob("{$dir}/*.php");$using_hosted=false;
-        foreach ($temp as $file) if (($file!=".") AND ($file!="..") AND (!isset($this->ignoredFiles[str_replace("{$dir}/",'',$file)]))) $array_file[$file]=$file;
-        if ($update==false)
-        	{
-	        if ($this->settings['hosted'])
+		$plugins=array();
+		if ($required_details) 
+			{
+			$valid_rcache=false;$cache_rpath=$this->settings['cookie_path'].'/'."int_{$required_details}.php";
+			if (file_exists($cache_rpath))
+				{
+				include($cache_rpath);
+				$cache_rts=filemtime($cache_rpath);
+				if (time()-$cache_rts<=$this->settings['plugins_cache_time']) $valid_rcache=true;
+				}
+			if ($valid_rcache) return $returnPlugins;
+			}
+		$cache_path=$this->settings['cookie_path'].'/'.$this->settings['plugins_cache_file'];$valid_cache=false;
+		$cache_ts=0;
+		if (!$update)
+			if (file_exists($cache_path))
+				{
+				include($cache_path);
+				$cache_ts=filemtime($cache_path);
+				if (time()-$cache_ts<=$this->settings['plugins_cache_time']) $valid_cache=true;
+				}
+		if (!$valid_cache)
+			{
+			$array_file=array();
+			$temp=glob($this->basePath."/plugins/*.plg.php");
+	        foreach ($temp as $file) $array_file[basename($file,'.plg.php')]=$file;
+	        if (!$update)
 	        	{
-				$using_hosted=true;$has_services=false;
-				$path=$this->settings['cookie_path'].'/oi_hosted_services.txt';
-				if (file_exists($path))
-					if (time()-filemtime($path)<=0) $has_services=true;
-				if ($has_services) $plugins['email']=unserialize(file_get_contents($path));
+		        if ($this->settings['hosted'])
+		        	{
+					if ($this->startPlugin('_hosted',true)!==FALSE) { $plugins=array();$plugins['hosted']=$this->servicesLink->getHostedServices(); }
+		        	else return array();
+		        	}
+	        	if (isset($array_file['_hosted'])) unset($array_file['_hosted']);
+	        	}	
+	         if ($update==TRUE OR $this->settings['hosted']==FALSE)
+	        	{
+	        	$reWriteAll=false;
+				if (count($array_file)>0) 
+					{			
+					ksort($array_file);$modified_files=array();
+					if (!empty($plugins['hosted'])) { $reWriteAll=true;$plugins=array(); }
+					else
+						foreach ($plugins as $key=>$vals)
+							{
+							foreach ($vals as $key2=>$val2)
+								if (!isset($array_file[$key2])) unset($vals[$key2]);
+							if (empty($vals)) unset($plugins[$key]);
+							else $plugins[$key]=$vals;
+							}
+					foreach ($array_file as $plugin_key=>$file) 
+						if (filemtime($file)>$cache_ts OR $reWriteAll) 
+							$modified_files[$plugin_key]=$file;
+					foreach($modified_files as $plugin_key=>$file)
+						if (file_exists($this->basePath."/conf/{$plugin_key}.conf"))
+							{
+							include_once($this->basePath."/conf/{$plugin_key}.conf");
+							if ($enable AND $update==false)
+								{ include($file); if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=$_pluginInfo; }
+							elseif ($update==true)
+								{ include($file); if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=array_merge(array('autoupdate'=>$autoUpdate),$_pluginInfo); }
+							}
+						else
+							{  include($file);if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=$_pluginInfo; $this->writePlConf($plugin_key,$_pluginInfo['type']);}
+					}
+				foreach ($plugins as $key=>$val) if (empty($val)) unset($plugins[$key]);
+	        	}
+			if (!$update)
+				{
+				if ((!$valid_cache) AND (empty($modified_files)) AND (!$this->settings['hosted'])) touch($this->settings['cookie_path'].'/'.$this->settings['plugins_cache_file']);
 				else
 					{
-					if ($this->startPlugin('_hosted',true))
-						if (!$temp=$this->servicesLink->getHostedServices()) $plugins=array();
-						else
-							{
-							file_put_contents($path,$temp);
-							$plugins['email']=unserialize($temp);
-							}
-					}
-	        	}
-        	}
-        if (!$update)
-        	{
-        	$path=dirname(__FILE__).'/plugins/_hosted.php';
-        	if (isset($array_file[$path])) unset($array_file[$path]);
-        	}
-        if ($update==TRUE OR $this->settings['hosted']==FALSE)
-			if (count($array_file)>0) 
-				{
-				sort($array_file);
-				foreach($array_file as $key=>$file)
-					{
-					$val=str_replace("{$dir}/",'',$file);
-					$plugin_key=str_replace('.php','',$val);
-					if (file_exists(dirname(__FILE__)."/conf/{$plugin_key}.conf"))
-						{
-						include_once(dirname(__FILE__)."/conf/{$plugin_key}.conf");
-						if ($enable AND $update==false)
-							{ include("{$dir}/{$val}");if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=$_pluginInfo;	}
-						elseif ($update==true)
-							{ include("{$dir}/{$val}"); if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=array_merge(array('autoupdate'=>$autoUpdate),$_pluginInfo); }
-						}
-					else
-						{  include("{$dir}/{$val}");if ($this->checkVersion($_pluginInfo['base_version'])) $plugins[$_pluginInfo['type']][$plugin_key]=$_pluginInfo; $this->writePlConf($plugin_key,$_pluginInfo['type']);}
+					$cache_contents="<?php\n";
+					$cache_contents.="\$plugins=array(\n".$this->arrayToText($plugins)."\n);\n";
+					$cache_contents.="?>";
+					file_put_contents($cache_path,$cache_contents);
 					}
 				}
-		return $plugins;
+			}
+		if (!$this->settings['hosted']) $returnPlugins=$plugins;			
+		else $returnPlugins=(!empty($plugins['hosted'])?$plugins['hosted']:array());		
+		if ($required_details) 
+			{			
+			if (!$valid_rcache)
+				{					 
+				foreach($returnPlugins as $types=>$plugins)
+					foreach($plugins as $plugKey=>$plugin)
+						if (!empty($plugin['imported_details']))
+							{ if (!in_array($required_details,$plugin['imported_details'])) unset($returnPlugins[$types][$plugKey]); }
+						else unset($returnPlugins[$types][$plugKey]);
+				if (!empty($returnPlugins))
+					{
+					$cache_contents="<?php\n";
+					$cache_contents.="\$returnPlugins=array(\n".$this->arrayToText($returnPlugins)."\n);\n";
+					$cache_contents.="?>";
+					file_put_contents($cache_rpath,$cache_contents);	
+					}		
+				}
+			return $returnPlugins;
+			}
+		$temp=array();
+		if (!empty($returnPlugins)) 
+			foreach ($returnPlugins as $type=>$type_plugins)
+				$temp=array_merge($temp,$type_plugins);				
+		$this->availablePlugins=$temp;							 																	
+		return $returnPlugins;
 		}
 	
 	/**
@@ -389,24 +452,24 @@ class OpenInviter
 	private function checkLoginCredentials($user)
 		{
 		$is_email=$this->plugin->isEmail($user);
-		if ($this->plugin->requirement)
+		if ($this->currentPlugin['requirement'])
 			{
-			if ($this->plugin->requirement=='email' AND !$is_email)
+			if ($this->currentPlugin['requirement']=='email' AND !$is_email)
 				{
 				$this->internalError="Please enter the full email, not just the username";
 				return false;
 				}
-			elseif ($this->plugin->requirement=='user' AND $is_email)
+			elseif ($this->currentPlugin['requirement']=='user' AND $is_email)
 				{
 				$this->internalError="Please enter just the username, not the full email";
 				return false;
 				}
 			}
-		if ($this->plugin->allowed_domains AND $is_email)
+		if ($this->currentPlugin['allowed_domains'] AND $is_email)
 			{
 			$temp=explode('@',$user);$user_domain=$temp[1];$temp=false;
-			foreach ($this->plugin->allowed_domains as $domain)
-				if (strpos($user_domain,$domain)!==false) $temp=true;
+			foreach ($this->currentPlugin['allowed_domains'] as $domain)
+				if (preg_match($domain,$user_domain)) { $temp=true;break; }
 			if (!$temp)
 				{
 				$this->internalError="<b>{$user_domain}</b> is not a valid domain for this provider";
@@ -414,6 +477,20 @@ class OpenInviter
 				}
 			}
 		return true;
+		}
+	
+	public function getPluginByDomain($user)
+		{
+		$user_domain=explode('@',$user);if (!isset($user_domain[1])) return false;
+		$user_domain=$user_domain[1];
+		foreach ($this->availablePlugins as $plugin=>$details)
+			{
+			$patterns=array();
+			if ($details['allowed_domains']) $patterns=$details['allowed_domains']; elseif (isset($details['detected_domains'])) $patterns=$details['detected_domains'];
+			foreach ($patterns as $domain_pattern)
+				if (preg_match($domain_pattern,$user_domain)) return $plugin;
+			}
+		return false;
 		}
 	
 	/**
@@ -445,6 +522,4 @@ class OpenInviter
 		}
 	
 	}
-	
-	
 ?>

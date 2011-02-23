@@ -13,7 +13,7 @@ function ers($ers)
 	{
 	if (!empty($ers))
 		{
-		$contents="<table cellspacing='0' cellpadding='0' style='border:1px solid red;' align='center' class='tbErrorMsgGrad'><tr><td valign='middle' style='padding:3px' valign='middle' class='tbErrorMsg'><img src='/images/ers.gif'></td><td valign='middle' style='color:red;padding:5px;'>";
+		$contents="<table cellspacing='0' cellpadding='0' style='border:1px solid red;' align='center'><tr><td valign='middle' style='padding:3px' valign='middle'><img src='images/ers.gif'></td><td valign='middle' style='color:red;padding:5px;'>";
 		foreach ($ers as $key=>$error)
 			$contents.="{$error}<br >";
 		$contents.="</td></tr></table><br >";
@@ -25,7 +25,7 @@ function oks($oks)
 	{
 	if (!empty($oks))
 		{
-		$contents="<table border='0' cellspacing='0' cellpadding='10' style='border:1px solid #5897FE;' align='center' class='tbInfoMsgGrad'><tr><td valign='middle' valign='middle' class='tbInfoMsg'><img src='/images/oks.gif' ></td><td valign='middle' style='color:#5897FE;padding:5px;'>	";
+		$contents="<table border='0' cellspacing='0' cellpadding='10' style='border:1px solid #5897FE;' align='center'><tr><td valign='middle' valign='middle'><img src='images/oks.gif' ></td><td valign='middle' style='color:#5897FE;padding:5px;'>	";
 		foreach ($oks as $key=>$msg)
 			$contents.="{$msg}<br >";
 		$contents.="</td></tr></table><br >";
@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 	if ($step=='get_contacts')
 		{
 		if (empty($_POST['email_box']))
-			$ers['email']="Email missing";
+			$ers['email']="Email missing !";
 		if (empty($_POST['password_box']))
-			$ers['password']="Password missing";
+			$ers['password']="Password missing !";
 		if (empty($_POST['provider_box']))
-			$ers['provider']="Provider missing";
+			$ers['provider']="Provider missing !";
 		if (count($ers)==0)
 			{
 			$inviter->startPlugin($_POST['provider_box']);
@@ -56,10 +56,10 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			elseif (!$inviter->login($_POST['email_box'],$_POST['password_box']))
 				{
 				$internal=$inviter->getInternalError();
-				$ers['login']=($internal?$internal:"Login failed. Please check the email and password you have provided and try again later");
+				$ers['login']=($internal?$internal:"Login failed. Please check the email and password you have provided and try again later !");
 				}
 			elseif (false===$contacts=$inviter->getMyContacts())
-				$ers['contacts']="Unable to get contacts.";
+				$ers['contacts']="Unable to get contacts !";
 			else
 				{
 				$import_ok=true;
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		}
 	elseif ($step=='send_invites')
 		{
-		if (empty($_POST['provider_box'])) $ers['provider']='Provider missing';
+		if (empty($_POST['provider_box'])) $ers['provider']='Provider missing !';
 		else
 			{
 			$inviter->startPlugin($_POST['provider_box']);
@@ -79,9 +79,9 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 			if ($internal) $ers['internal']=$internal;
 			else
 				{
-				if (empty($_POST['email_box'])) $ers['inviter']='Inviter information missing';
-				if (empty($_POST['oi_session_id'])) $ers['session_id']='No active session';
-				if (empty($_POST['message_box'])) $ers['message_body']='Message missing';
+				if (empty($_POST['email_box'])) $ers['inviter']='Inviter information missing !';
+				if (empty($_POST['oi_session_id'])) $ers['session_id']='No active session !';
+				if (empty($_POST['message_box'])) $ers['message_body']='Message missing !';
 				else $_POST['message_box']=strip_tags($_POST['message_box']);
 				$selected_contacts=array();$contacts=array();
 				$message=array('subject'=>$inviter->settings['message_subject'],'body'=>$inviter->settings['message_body'],'attachment'=>"\n\rAttached message: \n\r".$_POST['message_box']);
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 							$temp=explode('_',$key);$counter=$temp[1];
 							if (is_numeric($temp[1])) $contacts[$val]=$_POST['name_'.$temp[1]];
 							}
-					if (count($selected_contacts)==0) $ers['contacts']="You haven't selected any contacts to invite";
+					if (count($selected_contacts)==0) $ers['contacts']="You haven't selected any contacts to invite !";
 					}
 				}
 			}
@@ -146,15 +146,16 @@ if (!$done)
 	{
 	if ($step=='get_contacts')
 		{
-		$contents.="<table align='center' class='thTable' cellspacing='0' cellpadding='0' style='border:none;'>
+		$contents.="<table align='center' class='thTable' cellspacing='2' cellpadding='0' style='border:none;'>
 			<tr class='thTableRow'><td align='right'><label for='email_box'>Email</label></td><td><input class='thTextbox' type='text' name='email_box' value='{$_POST['email_box']}'></td></tr>
 			<tr class='thTableRow'><td align='right'><label for='password_box'>Password</label></td><td><input class='thTextbox' type='password' name='password_box' value='{$_POST['password_box']}'></td></tr>
 			<tr class='thTableRow'><td align='right'><label for='provider_box'>Email provider</label></td><td><select class='thSelect' name='provider_box'><option value=''></option>";
 		foreach ($oi_services as $type=>$providers)	
 			{
-			$contents.="<option disabled>".$inviter->pluginTypes[$type]."</option>";
+			$contents.="<optgroup label='{$inviter->pluginTypes[$type]}'>";
 			foreach ($providers as $provider=>$details)
 				$contents.="<option value='{$provider}'".($_POST['provider_box']==$provider?' selected':'').">{$details['name']}</option>";
+			$contents.="</optgroup>";
 			}
 		$contents.="</select></td></tr>
 			<tr class='thTableImportantRow'><td colspan='2' align='center'><input class='thButton' type='submit' name='import' value='Import Contacts'></td></tr>
@@ -166,7 +167,7 @@ if (!$done)
 				<tr class='thTableRow'><td align='center' colspan='2'><input type='submit' name='send' value='Send Invites' class='thButton' ></td></tr>
 			</table>";
 	}
-$contents.="<center><a href='http://openinviter.com/'><img src='http://openinviter.com/images/banners/banner_blue_1.gif' border='0' alt='Powered by OpenInviter.com' title='Powered by OpenInviter.com'></a></center>";
+$contents.="<center><a href='http://openinviter.com/'><img src='http://openinviter.com/images/banners/banner_blue_1.gif?nr=49083' border='0' alt='Powered by OpenInviter.com' title='Powered by OpenInviter.com'></a></center>";
 if (!$done)
 	{
 	if ($step=='send_invites')
