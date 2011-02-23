@@ -68,19 +68,7 @@ function __autoload($className)
         return false;
     }
 
-    // Namespace hack.
-    $pos = strrpos($className, '\\');
-
-    $trimmedClassName = $className;
-    if (false !== $pos) {
-        $trimmedClassName = substr($trimmedClassName, ($pos + 1));
-    }
-
-    $file = getcwd().$classes[$className].$trimmedClassName.'.php';
-    if (false === file_exists($file)) {
-        $file = getcwd().$classes[$className].$trimmedClassName.'.php';
-    }
-
+    $file = getcwd().$classes[$className].$className.'.php';
     return include_once $file;
 
 }//end __autoload()
