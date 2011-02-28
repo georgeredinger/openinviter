@@ -47,3 +47,9 @@ Running unit tests:
 	To use a override the default server (http://brs-api.radsoft.com.lh), set the env variable like this:
 	
 	     export BRS_OPENINVITER_HOST=http://brs-api.radsoft.com.lh:8888
+	
+	
+Test from your browsers with:
+
+  http://brs-api.radsoft.com.lh:8888/get_contacts/gmail
+
