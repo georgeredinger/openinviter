@@ -5,6 +5,7 @@ SPECIFIED IN THE FEATURES FILE.
 
 Server requirements
 * PHP 5.2+
+* php5-curl library
 * Apache 2 with mod_rewrite enabled
 * Apache 2 host configured with "AllowOverride All"
 * Write permission on <app_dir>/vendor/OpenInviter/conf
