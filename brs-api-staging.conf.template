@@ -1,27 +1,26 @@
-
 ## Added for BRS OpenInviter API
 <VirtualHost *:80>
-	ServerName  brs-api.radsoft.com.lh
-	ServerAdmin meza@meza.hu
+	ServerName  brs-api-staging.radsoft.com.lh
+	ServerAdmin jgoodsen@radsoft.com
 
-	DocumentRoot /Users/jgoodsen/workspace/openinviter/src
+	DocumentRoot /var/www/openinviter/src
 	<Directory />
 		Options FollowSymLinks
 		AllowOverride All
 	</Directory>
-	<Directory /var/www/brs-api.radsoft.com>
+	<Directory /var/www/openinviter/src>
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride All
 		Order allow,deny
 		allow from all
 	</Directory>
 
-	ErrorLog /Applications/MAMP/logs/brs-api.radsoft.com-error.log
+	ErrorLog /var/www/logs/brs-api-staging-error.log
 
 	# Possible values include: debug, info, notice, warn, error, crit,
 	# alert, emerg.
 	LogLevel warn
 
-	CustomLog /Applications/MAMP/logs/brs-api.radsoft.com-access.log combined
+	CustomLog /var/www/logs/brs-api-staging-access.log combined
 
 </VirtualHost>
