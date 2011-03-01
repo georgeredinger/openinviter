@@ -1,6 +1,6 @@
 ## Added for BRS OpenInviter API
 <VirtualHost *:80>
-	ServerName  brs-api-staging.radsoft.com.lh
+	ServerName  brs-api.radsoft.com.lh
 	ServerAdmin jgoodsen@radsoft.com
 
 	DocumentRoot /var/www/openinviter/src
@@ -15,12 +15,12 @@
 		allow from all
 	</Directory>
 
-	ErrorLog /var/www/logs/brs-api-staging-error.log
+	ErrorLog /var/www/logs/brs-api-error.log
 
 	# Possible values include: debug, info, notice, warn, error, crit,
 	# alert, emerg.
 	LogLevel warn
 
-	CustomLog /var/www/logs/brs-api-staging-access.log combined
+	CustomLog /var/www/logs/brs-api-access.log combined
 
 </VirtualHost>

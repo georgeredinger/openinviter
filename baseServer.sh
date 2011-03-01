@@ -18,7 +18,7 @@ apt-get -y install apache2 libapache2-mod-php5
 ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
 ln -s /etc/apache2/mods-available/vhost_alias.load /etc/apache2/mods-enabled/vhost_alias.load
 
-cp /var/www/openinviter/brs-api-staging.conf.template /etc/apache2/sites-enabled/brs-api-staging.conf
+cp /var/www/openinviter/brs-api.conf.template /etc/apache2/sites-enabled
 
 mkdir -p /var/www/logs
 chown -R :www-data /var/www
