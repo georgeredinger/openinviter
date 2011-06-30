@@ -147,26 +147,9 @@ class ContactImporter extends Resource implements Get
     private function formatService($service)
     {
 	switch($service) {
-		case 'gmail':		return "Gmail";
-		case 'yahoo':		return "Yahoo";
-		case 'rocketmail':	return "RocketMail";
-		case 'ymail':		return "Ymail";			
-		case 'hotmail':		return "Live/Hotmail";
-		case 'live':		return "Live";
-		case 'msn':		return "Live/Hotmail";
-		case 'aol':		return "AOL";
-		case 'twitter':		return "Twitter";
-		case 'konnects':		return "Konnects";
-		case 'bebo':		return "Bebo";
-		case 'plaxo':		return "Plaxo";
-		case 'cox_net':		return "Cox.Net";
-		case 'aim':		return "AIM";
-		case 'verizon_net':	return "Verizon.net";
-		case 'at_t_net':		return "ATT.net";
-		case 'fuse_net':		return "Fuse.net";
-		case 'quest':		return "QWest.com";
-		case 'sbc':		return "SBCGlobal.net";
-		case 'rr_com':		return "RR.com";
+		case 'hotmail': return "hotmail";
+		case 'live':    return "hotmail";
+		case 'msn':     return "hotmail";
 		default:
 			return $service;
 		}
