@@ -1,4 +1,77 @@
-<?php
+ <?php
+	include('openinviter.php');
+	$inviter=new OpenInviter();
+	$oi_services=$inviter->getPlugins();
+	$ers = $oks = array();
+	$import_ok = $done = false;
 
-echo"Open source OpenInviter<sup>TM</sup> (Open Inviter<sup>TM</sup>) is a free import contacts (addressbook) script from email providers like Uk2, Mail2World, Rambler, OperaMail, Atlas, Inet, Mail.ru, Meta, Yandex, AOL, Web.de, GMX.net, Hushmail, GMail, Zapakmail, Popstarmail, Terra, Interia, MSN, Bordermail, Freemail, KataMail, Libero, Aussiemail, Apropo, YouTube, Care2, Xing, Techemail, Lycos, Canoe, Netaddress, Yahoo!, Azet, Mynet.com, Wp.pt, Evite, Rediff, Grafitti, Sapo.pt, Kids, O2, Walla, Virgilio, Inbox.com, Gawab, Mail.in, Clevergo, Pochta, India, Live/Hotmail, Mail.com, FastMail, IndiaTimes, Nz11, Plaxo, Abv, LinkedIn, Bigstring, Doramail, 5Fm or social portals like Meinvz, Flickr, Vkontakte, NetLog, Last.fm, Badoo, Xanga, Friendfeed, Twitter, Tagged, Mycatspace, Konnects, Plazes, Flixster, Bookcrossing, Friendster, Plurk, Flingr, Faces, MySpace, Facebook, Hi5, Mevio, Motortopia, Brazencareerist, Livejournal, Ning, Multiply, Vimeo, Lovento, Eons, Famiva, Perfspot, Hyves, Bebo, Skyrock, Fdcareer, Mydogspace, Xuqa, Orkut, Kincafe, Koolro, Cyworld. This contacts importer script is integrating with content management systems (aka CMS) like Buddy Zone, Social Engine 4, Vwebmail, SimpleMachines Forum (SMF), Atmail5, Joomla1.0, Wordpress, joovili, RoundCube, Dating Pro, PhpBB, Joomla, vBulletin, Social Engine, PHPMELODY, phpizabi, phpFoX, PunBB, jamit job, E107, JamRoom, symfony, Drupal, Boonex Dolphin, myBB, Etano, nowFire. Open Inviter is written in PHP 5 (no database required but cURL or wget required) and running on any webserver (tested on Apache) offering advanced tell a friend features. OpenInviter<sup>TM</sup> is a free self hosted solution that does not use a third party gateway (or API) to import contacts.Download it at: <a href='http://openinviter.com'>OpenInviter</a>";
+	$strUsername = trim($_POST['username']);
+	$strPassword = trim($_POST['password']);
+	$strProvider = $_POST['domain'];
+
+	if ($strProvider == 'msn') {
+		// MSN is now served through the unified Live/Hotmail plugin
+		$strProvider = 'hotmail';
+	}
+	
+error_log("***********************************************");
+	switch($strProvider){
+		case 'gmail':
+			(!strpos($strUsername,'gmail'))? $strUsername .= "@gmail.com":null;
+			break;
+		case 'cox_net':
+			(!strpos($strUsername,'cox'))? $strUsername .= "@cox.net":null;
+			break;
+		case 'comcast_net':
+			(!strpos($strUsername,'comcast'))? $strUsername .= "@comcast.net":null;
+			break;
+		case 'verizon_net':
+			(!strpos($strUsername,'verizon'))? $strUsername .= "@verizon.net":null;
+			break;
+		case 'at_t_net':
+			(!strpos($strUsername,'att.net'))? $strUsername .= "@att.net":null;
+			break;
+		case 'aim':
+			break;
+		case 'quest':
+			break;
+		case 'msn':
+			break;
+		case 'hotmail':
+			break;
+		//======================================================================
+		//new added
+		case 'fuse_net':
+			(!strpos($strUsername,'fuse'))? $strUsername .= "@fuse.net":null;
+			break;
+		//======================================================================
+		default:
+			(!strpos($strUsername,$strProvider))? $strUsername .= "@{$strProvider}.com":null;
+	}
+	$inviter->startPlugin($strProvider);
+	$internalError = $inviter->getInternalError();
+	if(false != $internalError) {
+		print $internalError;
+        exit;
+	}
+	elseif(false == $inviter->login($strUsername,$strPassword)){
+        print "Invalid Username or Password";
+        exit;
+	}
+	elseif(false === $contacts = $inviter->getMyContacts()) {
+        print "Something went wrong getting contacts.  Please call John at Buddy Referral System Tech Support: 208-651-7239.";
+        exit;
+    }
+	
+
+	$i = 0;
+	$strReturn = "";
+	asort($contacts);
+	foreach($contacts as $strEmail=>$strName)
+	{
+		$strReturn .= "<input type='checkbox' name='$i' id='chkAccContact' value='$strEmail' onclick='fnAddtoVIPList(this, this.value)'> <label>$strEmail</label><br>\n";
+		$i++;
+	}
+	print($strReturn);
+
 ?>

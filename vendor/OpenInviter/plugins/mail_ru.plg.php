@@ -1,9 +1,9 @@
 <?php
 $_pluginInfo=array(
 	'name'=>'Mail.ru',
-	'version'=>'1.1.4',
+	'version'=>'1.1.5',
 	'description'=>"Get the contacts from a Mail.ru account",
-	'base_version'=>'1.6.3',
+	'base_version'=>'1.8.0',
 	'type'=>'email',
 	'check_url'=>'http://www.mail.ru',
 	'requirement'=>'email',

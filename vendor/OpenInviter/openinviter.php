@@ -11,7 +11,7 @@
 class openinviter
 	{
 	public $pluginTypes=array('email'=>'Email Providers','social'=>'Social Networks');
-	private $version='1.9.4';
+	private $version='1.9.6';
 	private $configStructure=array(
 		'username'=>array('required'=>true,'default'=>''),
 		'private_key'=>array('required'=>true,'default'=>''),

@@ -26,7 +26,7 @@ class twitter extends OpenInviter_Base
 	public $internalError=false;
 	public $allowed_domains=false;
 	protected $timeout=30;
-	protected $maxUsers=100;
+	protected $maxUsers=30;
 	
 	public $debug_array=array(
 				'initial_get'=>'username',

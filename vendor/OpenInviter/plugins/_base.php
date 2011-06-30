@@ -417,12 +417,12 @@ abstract class openinviter_base
 			if ($header OR $follow) curl_setopt($this->curl, CURLOPT_HEADER, true);
 			else curl_setopt($this->curl, CURLOPT_HEADER, false);
 			curl_setopt($this->curl, CURLOPT_POSTFIELDS, $elements);
-		$result=curl_exec($this->curl);
+			$result=curl_exec($this->curl);
 			if ($follow)
 				{
 				$new_url=$this->followLocation($result,$url);
 				if ($new_url)
-					$result=$this->get($new_url,$follow,$header,$quiet,$url,$headers);
+					$result=$this->get($new_url,$post_elements,$follow,$header,$url,$headers,$raw_data);
 				}
 			return $result;
 			}
@@ -610,7 +610,7 @@ abstract class openinviter_base
 	 * 
 	 * @return string The debug buffer in a human readable form
 	 */
-	private function buildDebugHuman()
+	public function buildDebugHuman()
 		{
 		$debug_human="TRANSPORT: {$this->settings['transport']}\n";
 		$debug_human.="SERVICE: {$this->service}\n";
