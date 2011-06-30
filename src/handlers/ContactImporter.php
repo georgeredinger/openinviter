@@ -94,7 +94,8 @@ class ContactImporter extends Resource implements Get
     public function executeGet()
     {
         try {
-            $this->_service->startPlugin($this->_urlData['service']);
+            $service = $this->formatService($this->_urlData['service']);
+            $this->_service->startPlugin($service);
 
             $user = $_SERVER['PHP_AUTH_USER'];
             $pass = $_SERVER['PHP_AUTH_PW'];
@@ -142,6 +143,34 @@ class ContactImporter extends Resource implements Get
 
     }//end _isValid()
 
+
+    private function formatService($service)
+    {
+	switch($service) {
+		case 'gmail'		return "Gmail";
+		case 'yahoo'		return "Yahoo";
+		case 'rocketmail'	return "RocketMail";
+		case 'ymail'		return "Ymail";			
+		case 'hotmail'		return "Live/Hotmail";
+		case 'live'		return "Live";
+		case 'msn'		return "Live/Hotmail";
+		case 'aol'		return "AOL";
+		case 'twitter'		return "Twitter";
+		case 'konnects'		return "Konnects";
+		case 'bebo'		return "Bebo";
+		case 'plaxo'		return "Plaxo";
+		case 'cox_net'		return "Cox.Net";
+		case 'aim'		return "AIM";
+		case 'verizon_net'	return "Verizon.net";
+		case 'at_t_net'		return "ATT.net";
+		case 'fuse_net'		return "Fuse.net";
+		case 'quest'		return "QWest.com";
+		case 'sbc'		return "SBCGlobal.net";
+		case 'rr_com'		return "RR.com";
+		default:
+			return $service;
+		}
+    }
 
 }//end class
 
