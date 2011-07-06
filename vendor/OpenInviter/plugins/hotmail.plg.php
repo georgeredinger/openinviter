@@ -7,8 +7,7 @@ $_pluginInfo=array(
 	'type'=>'email',
 	'check_url'=>'http://login.live.com/login.srf?id=2',
 	'requirement'=>'email',
-//	'allowed_domains'=>array('/(hotmail)/i','/(live)/i','/(msn)/i','/(chaishop)/i'),
-	'allowed_domains'=>false,
+	'allowed_domains'=>array('/(hotmail)/i','/(live)/i','/(msn)/i','/(chaishop)/i'),
 	'imported_details'=>array('first_name','email_1'),
 	);
 /**
