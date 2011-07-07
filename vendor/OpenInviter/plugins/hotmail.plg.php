@@ -7,8 +7,7 @@ $_pluginInfo=array(
 	'type'=>'email',
 	'check_url'=>'http://login.live.com/login.srf?id=2',
 	'requirement'=>'email',
-//	'allowed_domains'=>array('/(hotmail)/i','/(live)/i','/(msn)/i','/(chaishop)/i'),
-	'allowed_domains' => false,
+	'allowed_domains'=>array('/(hotmail)/i','/(live)/i','/(msn)/i','/(chaishop)/i'),
 	'imported_details'=>array('first_name','email_1'),
 	);
 /**
@@ -27,7 +26,7 @@ class hotmail extends openinviter_base
 	protected $timeout=30;
 		
 	public $debug_array=array(
-				'initial_get'=>'X-XSS-Protection',
+				'initial_get'=>'LoginOptions',
 				'login_post'=>'location.replace',
 				'first_redirect'=>'hn',
 				'url_inbox'=>'peopleUrlDomain',
@@ -53,10 +52,10 @@ class hotmail extends openinviter_base
 		$this->service_user=$user;
 		$this->service_password=$pass;
 		if (!$this->init()) return false;		
-		$res=$this->get("http://login.live.com/login.srf",true);
-		if ($this->checkResponse('initial_get',$res)) $this->updateDebugBuffer('initial_get',"http://login.live.com/login.srf",'GET');
+		$res=$this->get("http://login.live.com/login.srf?id=2",true);
+		if ($this->checkResponse('initial_get',$res)) $this->updateDebugBuffer('initial_get',"http://login.live.com/login.srf?id=2",'GET');
 		else{
-			$this->updateDebugBuffer('initial_get',"http://login.live.com/login.srf",'GET',false);
+			$this->updateDebugBuffer('initial_get',"http://login.live.com/login.srf?id=2",'GET',false);
 			$this->debugRequest();
 			$this->stopPlugin();
 			return false;	
@@ -64,11 +63,8 @@ class hotmail extends openinviter_base
 		
 		if (strlen($pass)>16) $pass=substr($pass,0,16);
 		$post_action=$this->getElementString($res,'method="POST" target="_top" action="','"');
-		//$post_elements=$this->getHiddenElements($res);
-		$post_elements = array();
-		//$post_elements["LoginOptions"]=3;
-		$post_elements["login"]=$user;$post_elements["password"]=$pass;
-		$res=$this->post("http://login.live.com/login.srf",$post_elements,true);		
+		$post_elements=$this->getHiddenElements($res);$post_elements["LoginOptions"]=3;$post_elements["login"]=$user;$post_elements["passwd"]=$pass;
+		$res=$this->post($post_action,$post_elements,true);		
 		if ($this->checkResponse("login_post",$res)) $this->updateDebugBuffer('login_post',"{$post_action}",'POST',true,$post_elements);
 		else{
 			$this->updateDebugBuffer('login_post',"{$post_action}",'POST',false,$post_elements);
@@ -76,18 +72,15 @@ class hotmail extends openinviter_base
 			$this->stopPlugin();
 			return false;
 			}
-//		$url_redirect=$this->getElementString($res,'.location.replace("','"');
-//		if (!empty($url_redirect)) $res=$this->get($url_redirect,true,true);
-//		if ($this->checkResponse('first_redirect',$res)) $this->updateDebugBuffer('first_redirect',"{$url_redirect}",'GET');
-//		else{
-//			$this->updateDebugBuffer('first_redirect',"{$url_redirect}",'GET',false);
-//			$this->debugRequest();
-//			$this->stopPlugin();
-//			return false;	
-//			}
-
-		$this->login_ok = true;
-		return true;
+		$url_redirect=$this->getElementString($res,'.location.replace("','"');
+		if (!empty($url_redirect)) $res=$this->get($url_redirect,true,true);
+		if ($this->checkResponse('first_redirect',$res)) $this->updateDebugBuffer('first_redirect',"{$url_redirect}",'GET');
+		else{
+			$this->updateDebugBuffer('first_redirect',"{$url_redirect}",'GET',false);
+			$this->debugRequest();
+			$this->stopPlugin();
+			return false;	
+			}
 		$base_url=$this->getElementString($res,'"hn":"','"');
 		if (!empty($base_url)) $this->login_ok=$base_url;
 		file_put_contents($this->getLogoutPath(),$base_url);
@@ -111,19 +104,17 @@ class hotmail extends openinviter_base
 			return false;
 			}
 		else $base_url=$this->login_ok;
-		$base_url = 'http://co118w.col118.mail.live.com';
-		$res=$this->get("{$base_url}/mail/ContactList.aspx");
-		if ($this->checkResponse('url_sent_to',$res)) $this->updateDebugBuffer('url_sent_to',"{$base_url}mail/ContactList.aspx",'GET');
+		$res=$this->get("{$base_url}/mail/EditMessageLight.aspx?n=");				
+		if ($this->checkResponse('url_sent_to',$res)) $this->updateDebugBuffer('url_sent_to',"{$base_url}mail/EditMessageLight.aspx?n=",'GET');
 		else{
-			$this->updateDebugBuffer('url_sent_to',"{$base_url}mail/ContactList.aspx",'GET',false);
+			$this->updateDebugBuffer('url_sent_to',"{$base_url}mail/EditMessageLight.aspx?n=",'GET',false);
 			$this->debugRequest();
 			$this->stopPlugin();
 			return false;	
 			}
-		$urlContacts="{$base_url}/mail/ContactMainLight.aspx?n=".urldecode($this->getElementString($res,'ContactMainLight.aspx','">'));
-//		var_dump($urlContacts);die;
+	
+		$urlContacts="{$base_url}/mail/ContactList.aspx".$this->getElementString($res,'ContactList.aspx','"');
 		$res=$this->get($urlContacts);
-		var_dump($res);die;
 		if ($this->checkResponse('get_contacts',$res)) $this->updateDebugBuffer('get_contacts',"{$urlContacts}",'GET');
 		else{
 			$this->updateDebugBuffer('get_contacts',"{$urlContacts}",'GET',false);
