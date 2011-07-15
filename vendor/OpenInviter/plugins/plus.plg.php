@@ -12,17 +12,14 @@ $_pluginInfo=array(
 
 class plus extends openinviter_base
 {
-	protected $username   = NULL;
-	protected $password   = NULL;
 	protected $loginUrl   = 'https://webmail.plus.net/src/redirect.php';
 	protected $logoutUrl  = 'https://webmail.plus.net/src/signout.php';
 	protected $contactUrl = 'https://webmail.plus.net/src/addressbook.php';
-	protected $cookieJar  = NULL;
 	protected $userAgent  = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.112 Safari/534.30';
-	protected $isLoggedIn = FALSE;
 
 	public function login($user, $pass)
 	{
+		if(empty($user) || empty($pass)) return false;
 		if(!$this->init()) return false;
 		$postfields = array(
 			'login_username'        => $user,
