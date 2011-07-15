@@ -16,6 +16,7 @@ class plus extends openinviter_base
 	protected $logoutUrl  = 'https://webmail.plus.net/src/signout.php';
 	protected $contactUrl = 'https://webmail.plus.net/src/addressbook.php';
 	protected $userAgent  = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.112 Safari/534.30';
+	private $isLoggedIn   = false;
 
 	public function login($user, $pass)
 	{
@@ -30,6 +31,7 @@ class plus extends openinviter_base
 		);
 		$data = $this->post($this->loginUrl, $postfields);
 		if (strlen($data) == 0) {
+			$this->isLoggedIn = true;
 			return true;
 		}
 		return false;
@@ -37,7 +39,7 @@ class plus extends openinviter_base
 	
 	public function getMyContacts()
 	{
-		if ($this->login())
+		if ($this->isLoggedIn)
 		{
 			$data = $this->get($this->contactUrl);
 			$table_start  = stripos($data, '<table align="center" border="0" cellpadding="1" cellspacing="0" width="90%">');
