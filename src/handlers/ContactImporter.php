@@ -41,6 +41,10 @@
 class ContactImporter extends Resource implements Get
 {
 
+    const GETPARAM_APIAUTH = 'apiauth';
+    const GETPARAM_USERNAME = 'username';
+    const GETPARAM_PASSWORD = 'password';
+
     /**
      * @var BrsConfig configuration object
      */
@@ -97,14 +101,8 @@ class ContactImporter extends Resource implements Get
             $service = $this->formatService($this->_urlData['service']);
             $this->_service->startPlugin($service);
 
-            $user = $_SERVER['PHP_AUTH_USER'];
-            $pass = $_SERVER['PHP_AUTH_PW'];
-            if (false === $this->_isValid($user, $pass)) {
-                $realm = $this->_config->realmName();
-                header('WWW-Authenticate: Basic realm="'.$realm.'"');
-                header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
-                echo json_encode(array('message' => 'Bad Username or Password'));
-                return;
+            if (!$this->_authenticateUser()) {
+		exit;
             }
 
             $contacts = $this->_service->getMyContacts();
@@ -124,6 +122,95 @@ class ContactImporter extends Resource implements Get
 
     }//end executeGet()
 
+
+    /**
+     * Authenticate the request
+     *
+     * @return bool
+     */
+    private function _authenticateUser()
+    {
+	if (!isset($_GET[self::GETPARAM_APIAUTH]))
+	{
+	
+		return $this->_authV01($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+	}
+	
+	if (isset($_GET[self::GETPARAM_USERNAME]) || isset($_GET[self::GETPARAM_PASSWORD]))
+	{
+		if (!$this->_isValidClient($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+			$realm = $this->_config->realmName();
+			header('WWW-Authenticate: Basic realm="'.$realm.'"');
+			header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
+			echo json_encode(array('message' => 'Bad API Client Username or Password.'));
+			return false;
+		}
+		return $this->_authV02($_GET[self::GETPARAM_USERNAME], $_GET[self::GETPARAM_PASSWORD]);
+	}
+	header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
+	echo json_encode(array('message' => 'Username and/or password is not given'));
+	return false;
+    }
+
+
+    /**
+     * Is the client a valid one?
+     *
+     * @param string $user The client username
+     * @param string $pass The client password
+     *
+     * @return boolean
+     */
+    private function _isValidClient($user="", $pass="")
+    {
+	if($user=="brs-client" && md5($pass)=="f3720843492a2c691e161e39a7d9450b") {
+		return true;
+	}
+	return false;
+    }
+
+
+    /**
+     * Authenticates the _user_ with HTTP auth
+     *
+     * @param string $user The username of the service
+     * @param string $pass The password to the username of the service
+     *
+     * @return boolean
+     *
+     * @deprecated
+     */
+    private function _authV01($user, $pass)
+    {
+        if (false === $this->_isValid($user, $pass)) {
+            $realm = $this->_config->realmName();
+            header('WWW-Authenticate: Basic realm="'.$realm.'"');
+            header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
+            error_log("Deprecated authentication method.");
+            echo json_encode(array('message' => 'Bad Username or Password. This authentication method is deprecated, please use the new version'));
+            return false;
+        }
+        return true;
+    }
+    
+    
+    /**
+     * Authenticates the user to the service with non HTTP params
+     *
+     * @param string $user The username of the service
+     * @param string $pass The password to the username of the service
+     *
+     * @return boolean
+     */
+    private function _authV02($user="", $pass="")
+    {
+	if (false === $this->_isValid($user, $pass)) {
+		header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
+		echo json_encode(array('message' => 'Bad Username or Password.'));
+		return false;
+	}
+	return true;
+    }
 
     /**
      * Determines if the user is valid or not.
