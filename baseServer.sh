@@ -19,8 +19,7 @@ ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite
 ln -s /etc/apache2/mods-available/vhost_alias.load /etc/apache2/mods-enabled/vhost_alias.load
 
 cp /var/www/openinviter/brs-api.conf.template /etc/apache2/sites-enabled
-g
-mkdir -p /var/www/logs
+
 chown -R :www-data /var/www
 
 /etc/init.d/apache2 restart
