@@ -6,7 +6,7 @@ $_pluginInfo=array(
 	'base_version'=>'1.8.0',
 	'type'=>'email',
 	'check_url'=>'http://www.plus.net/',
-	'requirement'=>'email',
+	'requirement'=>'user',
 	'allowed_domains'=>false,
 );
 
