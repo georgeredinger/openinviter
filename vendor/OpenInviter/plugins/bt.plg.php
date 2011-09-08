@@ -1,10 +1,10 @@
 <?php
 $_pluginInfo=array(
 	'name'=>'Bt',
-	'version'=>'1.1.2',
+	'version'=>'1.0',
 	'description'=>"Get the contacts from a Bt account",
 	'base_version'=>'1.8.4',
-	'type'=>'social',
+	'type'=>'email',
 	'check_url'=>'http://bt.com',
 	'requirement'=>'user',
 	'allowed_domains'=>false,
@@ -29,10 +29,8 @@ class bt extends OpenInviter_Base
 	
 	public $debug_array=array(
 				'initial_get'=>'username',
-				'login_post'=>'inbox',
-				'friends_url'=>'list-tweet',
-				'wall_message'=>'latest_text',
-				'send_message'=>'inbox'
+				'login_post'=>'bt',
+				'address_page'=>'Address book'
 				);
 	
 	/**
@@ -49,6 +47,8 @@ class bt extends OpenInviter_Base
 		{
 		$this->resetDebugger();
 		$this->service='bt';
+		if(!strpos($user,'@btconnect.com'))
+		$user = $user.'@btconnect.com';
 		$this->service_user=$user;
 		$this->service_pass=$pass;
 		if (!$this->init()) return false;
@@ -74,6 +74,8 @@ class bt extends OpenInviter_Base
 			$this->stopPlugin();	
 			return false;
 			}				
+
+			//echo $res=$this->get('https://www.intouch.bt.com/BTCOM/app/viewContacts.do?pab_detail_1=surname&pab_detail_2=Home&pab_detail_3=Work&pab_detail_4=Email&page_num_contacts=25&sort_field=surname&email_detail_1=surname&email_detail_2=Email',true);
 		$this->login_ok="https://www.intouch.bt.com/BTCOM/app/viewContacts.do?pab_detail_1=surname&pab_detail_2=Home&pab_detail_3=Work&pab_detail_4=Email&page_num_contacts=25&sort_field=surname&email_detail_1=surname&email_detail_2=Email";
 		return true;
 		}
@@ -95,26 +97,33 @@ class bt extends OpenInviter_Base
 			return false;
 			}
 		else $url=$this->login_ok;
-		$res=$this->get($url);
-		if ($this->checkResponse('friends_url',$res))
-			$this->updateDebugBuffer('friends_url',"{$url}",'GET');
+		$res=$this->get($url,true);
+		if ($this->checkResponse('address_page',$res))
+			$this->updateDebugBuffer('address_page',"{$url}",'GET');
 		else 
 			{
-			$this->updateDebugBuffer('friends_url',"{$url}",'GET',false);
+			$this->updateDebugBuffer('address_page',"{$url}",'GET',false);
 			$this->debugRequest();
 			$this->stopPlugin();	
 			return false;
 			}	
-		$contacts=array();$countUsers=0;
+		$contacts=array();$countUsers=0; $tempArray = array();
 
 		preg_match_all('/<tr[^>]*>[^<]*<td\sclass="t4Tint">(.*?)<\/tr>/si',$res,$tr_array,PREG_SET_ORDER);
 
 		foreach($tr_array as $tr){
 	
 				preg_match_all('/<td>(.*?)<\/td>/si',$tr[1],$td_ar,PREG_SET_ORDER);
-				$contacts[$countUsers]=trim(str_replace('&nbsp','',strip_tags($td_ar[3][1]))); $countUsers++;
+				$email = trim(str_replace('&nbsp;','',strip_tags($td_ar[3][1])));
+				$name = trim(str_replace('&nbsp;','',strip_tags($td_ar[0][1])));
+				$tempArray['first_name'] = $name.' ';
+				$tempArray['email_1'] = $email;
+				$contacts[$email] = $tempArray; $countUsers++;
 
 		}
+		
+		foreach ($contacts as $email=>$name) if (!$this->isEmail($email)) unset($contacts[$email]);
+		return $this->returnContacts($contacts);
 						
 		/*do{			
 			$nextPage=false;
