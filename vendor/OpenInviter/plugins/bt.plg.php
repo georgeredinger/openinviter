@@ -29,7 +29,7 @@ class bt extends OpenInviter_Base
 	
 	public $debug_array=array(
 				'initial_get'=>'username',
-				'login_post'=>'bt',
+				'login_post'=>'Welcome to MyBT',
 				'address_page'=>'Address book'
 				);
 	
@@ -45,6 +45,7 @@ class bt extends OpenInviter_Base
 	 */
 	public function login($user,$pass)
 		{
+		if(empty($user) || empty($pass)) return false;
 		$this->resetDebugger();
 		$this->service='bt';
 		if(!strpos($user,'@btconnect.com'))
