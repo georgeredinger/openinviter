@@ -98,31 +98,41 @@ class bt extends OpenInviter_Base
 			return false;
 			}
 		else $url=$this->login_ok;
-		$res=$this->get($url,true);
-		if ($this->checkResponse('address_page',$res))
-			$this->updateDebugBuffer('address_page',"{$url}",'GET');
-		else 
-			{
-			$this->updateDebugBuffer('address_page',"{$url}",'GET',false);
-			$this->debugRequest();
-			$this->stopPlugin();	
-			return false;
-			}	
 		$contacts=array();$countUsers=0; $tempArray = array();
+		do{
+			$res=$this->get($url,true);
+			if ($this->checkResponse('address_page',$res))
+				$this->updateDebugBuffer('address_page',"{$url}",'GET');
+			else 
+				{
+				$this->updateDebugBuffer('address_page',"{$url}",'GET',false);
+				$this->debugRequest();
+				$this->stopPlugin();	
+				return false;
+			}	
+			
 
-		preg_match_all('/<tr[^>]*>[^<]*<td\sclass="t4Tint">(.*?)<\/tr>/si',$res,$tr_array,PREG_SET_ORDER);
+			preg_match_all('/<tr[^>]*>[^<]*<td\sclass="t4Tint">(.*?)<\/tr>/si',$res,$tr_array,PREG_SET_ORDER);
 
-		foreach($tr_array as $tr){
+			foreach($tr_array as $tr){
 	
 				preg_match_all('/<td>(.*?)<\/td>/si',$tr[1],$td_ar,PREG_SET_ORDER);
 				$email = trim(str_replace('&nbsp;','',strip_tags($td_ar[3][1])));
 				$name = trim(str_replace('&nbsp;','',strip_tags($td_ar[0][1])));
-				$tempArray['first_name'] = $name.' ';
+				$tempArray['first_name'] = $name;
 				$tempArray['email_1'] = $email;
 				$contacts[$email] = $tempArray; $countUsers++;
 
-		}
+			}
 		
+			
+			if(preg_match('/<a[^>]*href="([^"]*)"[^>]*>[^<]*<img[^>]*alt="Next"[^>]*>/si',$res,$match))
+				$url = 'https://www.intouch.bt.com/BTCOM/app/'.trim($match[1]);
+			else
+				$url = '';
+		
+		}		
+		while (!empty($url));
 		foreach ($contacts as $email=>$name) if (!$this->isEmail($email)) unset($contacts[$email]);
 		return $this->returnContacts($contacts);
 						
@@ -142,7 +152,6 @@ class bt extends OpenInviter_Base
 			if (!empty($nextPage)) $res=$this->get('http://mobile.twitter.com'.$nextPage);			
 			}
 		while ($nextPage);	*/		
-		return $contacts;	
 		}
 
 
