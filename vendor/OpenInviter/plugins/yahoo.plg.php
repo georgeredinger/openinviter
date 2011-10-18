@@ -61,19 +61,13 @@ class yahoo extends openinviter_base
 		
 		$post_elements=$this->getHiddenElements($res);$post_elements["save"]="Sign+In";$post_elements['login']=$user;$post_elements['passwd']=$pass;		
 	    $res=$this->post("https://login.yahoo.com/config/login?",$post_elements,true);	    
-		if($this->checkResponse('id="antiImg"',$res)) {
-			print "CAPTCHA is blocking this site. Please log in directly from a web browser to disable CAPTCHA on your account";
-			die;
-			$this->debugRequest();
-			$this->stopPlugin();
-			return false;
-		}	
 	   	if ($this->checkResponse('login_post',$res))
 			$this->updateDebugBuffer('login_post',"https://login.yahoo.com/config/login?",'POST',true,$post_elements);
 		else 
 			{
 			$this->updateDebugBuffer('login_post',"https://login.yahoo.com/config/login?",'POST',false,$post_elements);
-			
+			$this->debugRequest();
+			$this->stopPlugin();	
 			return false;
 			}		
 		$this->login_ok=$this->login_ok="http://address.mail.yahoo.com/?_src=&VPC=print";
