@@ -405,6 +405,7 @@ abstract class openinviter_base
 			{
 			curl_setopt($this->curl, CURLOPT_URL, $url);
 			curl_setopt($this->curl, CURLOPT_POST,true);
+			curl_setopt($this->curl, CURLOPT_VERBOSE, true);
 			if ($headers)
 				{
 				$curl_headers=array();
@@ -417,7 +418,8 @@ abstract class openinviter_base
 			if ($header OR $follow) curl_setopt($this->curl, CURLOPT_HEADER, true);
 			else curl_setopt($this->curl, CURLOPT_HEADER, false);
 			curl_setopt($this->curl, CURLOPT_POSTFIELDS, $elements);
-		$result=curl_exec($this->curl);
+			curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
+			$result=curl_exec($this->curl);
 			if ($follow)
 				{
 				$new_url=$this->followLocation($result,$url);
