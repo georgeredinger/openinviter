@@ -10,6 +10,7 @@ $_pluginInfo=array(
 	'allowed_domains'=>array('/(shaw)/i'),
 	'imported_details'=>array('first_name','email_1'),
 	);
+
 /**
  * Shaw.ca Plugin
  * 
@@ -40,7 +41,8 @@ class shaw_ca extends openinviter_base
 	 * @return bool TRUE if the current user was authenticated successfully, FALSE otherwise.
 	 */
 	public function login($user,$pass)
-		{
+    {
+        error_log("I got to this point");
 		$this->resetDebugger();
 		$this->service='shaw_ca';
 		$this->service_user=$user;
