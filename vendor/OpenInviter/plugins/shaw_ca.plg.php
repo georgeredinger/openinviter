@@ -73,7 +73,7 @@ class shaw_ca extends openinviter_base
 			$this->stopPlugin();	
 			return false;
 			}		
-		$this->login_ok=$this->login_ok="https://webmail.shaw.ca/uwc/abs/search.xml?stopsearch=1";
+		$this->login_ok="https://webmail.shaw.ca/uwc/abs/search.xml?stopsearch=1";
 		return true;
 		}
 
@@ -95,8 +95,9 @@ class shaw_ca extends openinviter_base
 			}
 		else
 			$url=$this->login_ok;
-		$contacts=array();		
-		$res=$this->get($url,true);
+			$contacts=array();		
+			$res=$this->get($url,true);
+		
 		if ($this->checkResponse("address_book",$res))		
 			$this->updateDebugBuffer('address_book',"{$url}",'GET');
 		else 
@@ -108,24 +109,26 @@ class shaw_ca extends openinviter_base
 			}
 
 				
-		$emailA=array();$bulk=array();
-		$res=str_replace(array('  ','	',PHP_EOL,"\n","\r\n"),array('','','','',''),$res);
-
-		preg_match_all("#abperson'\);\"\>(.*)\<\/a\>.*sendMail\(.*%22\)\"\>(.*)\<\/a\>\&#U",$res,$bulk);
+		$emailA=array();$bulk=array();$bookidA=array();$bookid='';
 		
+		preg_match("/actionbookid.value\s*\=\s*\'(.*?)\'/", $res,$bookidA);
+
+		if(!empty($bookidA)) 
+			$bookid = $bookidA[1];
+		$printableUrl='https://webmail.shaw.ca/uwc/abs/abprnlist.xml?bookid=' . $bookid;
+		$res=$this->get($printableUrl);
+		$res=str_replace(array('  ','	',PHP_EOL,"\n","\r\n"),array('','','','',''),$res);
+		preg_match_all('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i', $res, $bulk);
+
 		$contacts=array();
 					
 			if (!empty($bulk))
 			{
-				foreach($bulk[1] as $key=>$name)
+				foreach($bulk[0] as $key=>$emailAddress)
 				{
-					$nameFormated=trim(strip_tags($name));
-					
-					if (!empty($bulk[2][$key])) $contacts[$bulk[2][$key]]=array('email_1'=>$bulk[2][$key],'first_name'=>$nameFormated);
-					
+					if (!empty($emailAddress) && $emailAddress != 'e.g.john@siroe.com') $contacts[$bulk[0][$key]]=array('email_1'=>$emailAddress,'first_name'=>'');
 				}
 			}
-
 		foreach ($contacts as $email=>$name) if (!$this->isEmail($email)) unset($contacts[$email]);
 		return $this->returnContacts($contacts);
 		}
