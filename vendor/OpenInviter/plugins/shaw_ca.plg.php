@@ -26,7 +26,8 @@ class shaw_ca extends openinviter_base
 	public $debug_array=array(
 			  'initial_get'=>'Shaw Webmail',
 			  'login_post'=>'getLocalizedLabel',
-			  'address_book'=>'Personal Address Book'
+			  'address_book'=>'Personal Address Book',
+			  'printable_page'=>'abprnlist.xml'
 			  );
 	
 	/**
@@ -108,15 +109,23 @@ class shaw_ca extends openinviter_base
 			return false;
 			}
 
-				
-		$emailA=array();$bulk=array();$bookidA=array();$bookid='';
-		
+		$bulk=array();$bookidA=array();$bookid='';
 		preg_match("/actionbookid.value\s*\=\s*\'(.*?)\'/", $res,$bookidA);
 
-		if(!empty($bookidA)) 
-			$bookid = $bookidA[1];
+		if(!empty($bookidA)) $bookid = $bookidA[1];
 		$printableUrl='https://webmail.shaw.ca/uwc/abs/abprnlist.xml?bookid=' . $bookid;
 		$res=$this->get($printableUrl);
+
+		if ($this->checkResponse("printable_page",$res))
+		$this->updateDebugBuffer('printable_page',"{$printableUrl}",'GET');
+		else
+		{
+			$this->updateDebugBuffer('printable_page',"{$printableUrl}",'GET',false);
+			$this->debugRequest();
+			$this->stopPlugin();
+			return false;
+		}
+		
 		$res=str_replace(array('  ','	',PHP_EOL,"\n","\r\n"),array('','','','',''),$res);
 		preg_match_all('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i', $res, $bulk);
 
